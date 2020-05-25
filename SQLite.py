@@ -45,7 +45,8 @@ def create_tables(cur, con):
             "sid_meta1_name TEXT,"
             "sid_meta2_name TEXT,"
             "sid_meta3_name TEXT,"
-            "contains_crosslink BOOLEAN)"
+            "contains_crosslink BOOLEAN,"
+            "custom_config TEXT)"
         )
 
         # ToDo: not used atm might be a good place to save ions here?

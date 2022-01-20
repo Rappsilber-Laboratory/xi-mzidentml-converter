@@ -230,7 +230,8 @@ class MzIdParser:
 
     def get_ion_types_mzid(self, sid_item):
         try:
-            ion_names_list = [i['name'] for i in sid_item['IonType']]
+            fragmentation = sid_item['Fragmentation']
+            ion_names_list = [i['name'] for i in fragmentation['IonType']]
             ion_names_list = list(set(ion_names_list))
         except KeyError:
             return []

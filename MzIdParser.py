@@ -855,17 +855,17 @@ class MzIdParser:
         self.ident_count = identification_id
 
         # warnings
-        if len(fragment_parsing_error_scans) > 0:
-            if len(fragment_parsing_error_scans) > 50:
-                id_string = '; '.join(fragment_parsing_error_scans[:50]) + ' ...'
-            else:
-                id_string = '; '.join(fragment_parsing_error_scans)
-
-            self.warnings.append({
-                "type": "IonParsing",
-                "message": "mzidentML file does not specify fragment ions.",
-                'id': id_string
-            })
+        # if len(fragment_parsing_error_scans) > 0:
+        #     if len(fragment_parsing_error_scans) > 50:
+        #         id_string = '; '.join(fragment_parsing_error_scans[:50]) + ' ...'
+        #     else:
+        #         id_string = '; '.join(fragment_parsing_error_scans)
+        #
+        #     self.warnings.append({
+        #         "type": "IonParsing",
+        #         "message": "mzidentML file does not specify fragment ions.",
+        #         'id': id_string
+        #     })
 
     def upload_info(self):
         self.upload_info_read = True

@@ -117,7 +117,7 @@ class LinksOnlyCsvParser(AbstractCsvParser):
             # pepPos2 - if pepPos2 is not set fill list with default value (-1)
             # ToDo: might need changing for xiUI where pepPos is not optional
             self.logger.info(id_item['abspos2'])
-            if id_item['abspos2'] == -1 or math.isnan(id_item['abspos2']):
+            if id_item['abspos2'] == -1: # or math.isnan(id_item['abspos2']):
                 abs_pos_list2 = [-1] * len(protein_list2)
             else:
                 abs_pos_list2 = str(id_item['abspos2']).split(";")

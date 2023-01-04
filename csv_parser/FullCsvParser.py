@@ -413,7 +413,7 @@ class FullCsvParser(AbstractCsvParser):
                     pep1_id,                # peptide_ref
                     protein_list1[i],       # dbsequence_ref - ToDo: might change to numerical id
                     accession,              # protein_accession
-                    pep_pos_list1[i],       # pep_start
+                    int(float(pep_pos_list1[i])),       # pep_start
                     is_decoy_list1[i],      # is_decoy
                     self.upload_id          # upload_id
                 ]
@@ -437,7 +437,7 @@ class FullCsvParser(AbstractCsvParser):
                         pep2_id,                # peptide_ref
                         protein_list2[i],       # dbsequence_ref - ToDo: might change to numerical id
                         accession,              # protein_accession
-                        pep_pos_list2[i],       # pep_start
+                        int(float(pep_pos_list2[i])),       # pep_start
                         is_decoy_list2[i],      # is_decoy
                         self.upload_id          # upload_id
                     ]

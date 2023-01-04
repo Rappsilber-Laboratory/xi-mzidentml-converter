@@ -509,7 +509,11 @@ class MzIdParser:
                     else:
                         # cross-link acceptor doesn't have a name
                         if 'cross-link acceptor' not in mod.keys() and 'cross-link receiver' not in mod.keys():
-                            raise MzIdParseException("Missing modification name")
+                            # raise MzIdParseException("Missing modification name")
+                            mod['name'] = "({0:.2f})".format(mod['monoisotopicMassDelta'])
+                            self.add_to_modlist(mod)
+                            cur_mod['Modification'] = mod['name']
+
 
                     # add CL locations
                     if 'cross-link donor' in mod.keys() or 'cross-link acceptor' in mod.keys() \

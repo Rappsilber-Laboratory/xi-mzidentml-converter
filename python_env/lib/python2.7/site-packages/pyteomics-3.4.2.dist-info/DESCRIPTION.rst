@@ -1,0 +1,80 @@
+What is Pyteomics?
+------------------
+
+Pyteomics is a collection of lightweight and handy tools for Python that help
+to handle various sorts of proteomics data. Pyteomics provides a growing set of
+modules to facilitate the most common tasks in proteomics data analysis, such as:
+
+* calculation of basic physico-chemical properties of polypeptides:
+
+  * mass and isotopic distribution
+  * charge and pI
+  * chromatographic retention time
+
+* access to common proteomics data:
+
+  * MS or LC-MS data
+  * FASTA databases
+  * search engines output
+
+* easy manipulation of sequences of modified peptides and proteins
+
+The goal of the Pyteomics project is to provide a versatile, reliable and
+well-documented set of open tools for the wide proteomics community.
+One of the project's key features is Python itself, an open source language
+increasingly popular in scientific programming. The main
+applications of the library are reproducible statistical data analysis and rapid
+software prototyping.
+
+Supported Python versions
+-------------------------
+
+Pyteomics supports Python 2.7 and Python 3.3+.
+
+Project dependencies
+--------------------
+
+Pyteomics uses the following Python packages:
+
+ - `numpy <http://pypi.python.org/pypi/numpy>`_
+ - `matplotlib <http://sourceforge.net/projects/matplotlib/files/matplotlib/>`_
+   (used by **pyteomics.pylab_aux**)
+ - `lxml <http://pypi.python.org/pypi/lxml>`_ (used by **pyteomics.mzml**,
+   **pyteomics.pepxml**, **pyteomics.mzid**,
+   **pyteomics.tandem**)
+ - `pandas <http://pandas.pydata.org/>`_ (can be used with **pyteomics.pepxml**,
+   **pyteomics.tandem**, **pyteomics.mzid**, **pyteomics.auxiliary**)
+ - `sqlalchemy <http://www.sqlalchemy.org/>`_ (used by **pyteomics.mass.unimod**)
+
+All dependencies are optional.
+
+GNU/Linux
+---------
+
+The preferred way to obtain Pyteomics is via `pip Python package manager <https://pip.pypa.io/>`_.
+The shell code for a freshly installed Ubuntu system::
+
+    sudo apt-get install python-setuptools python-dev build-essential
+    sudo easy_install pip
+    sudo pip install lxml numpy matplotlib pyteomics
+
+Arch-based distros
+..................
+
+On Arch Linux and related distros, you can install Pyteomics from AUR:
+
+ - `python-pyteomics <https://aur.archlinux.org/packages/python-pyteomics/>`_
+ - `python2-pyteomics <https://aur.archlinux.org/packages/python2-pyteomics/>`_
+
+
+Windows
+-------
+
+- `Get pip <https://pip.pypa.io/en/stable/installing/>`_, if you don't have it yet.
+
+- Install Pyteomics and its dependencies::
+
+    pip install lxml numpy matplotlib pyteomics
+
+
+

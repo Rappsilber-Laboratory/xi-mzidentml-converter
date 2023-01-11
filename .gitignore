@@ -1,5 +1,5 @@
 
-python_env/*
+
 !python_env/lib/python2\.7/site\-packages/pyteomics/*
 !python_env/lib/python2\.7/site\-packages/pymzml/run.py*
 !python_env/lib/python2\.7/site\-packages/pymzml/obo/*.obo

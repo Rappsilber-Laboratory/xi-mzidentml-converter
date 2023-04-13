@@ -29,7 +29,7 @@ def create_tables(cur, con):
 def new_upload(inj_list, cur, con):
     try:
         cur.execute("""
-    INSERT INTO uploads (
+    INSERT INTO upload (
         user_id,
         filename,
         origin,       
@@ -46,7 +46,7 @@ def new_upload(inj_list, cur, con):
 
 def get_random_id(upload_id, cur, con):
     try:
-        cur.execute("SELECT random_id FROM uploads WHERE id = " + str(upload_id) + ";")
+        cur.execute("SELECT random_id FROM upload WHERE id = " + str(upload_id) + ";")
         con.commit()
 
     except psycopg2.Error as e:
@@ -66,7 +66,7 @@ def write_mzid_info(peak_list_file_names,
                     bib,
                     upload_id, cur, con):
     try:
-        cur.execute("""UPDATE uploads SET 
+        cur.execute("""UPDATE upload SET 
                         peak_list_file_names = (%s),
                         spectra_formats = (%s),
                         analysis_software = (%s),
@@ -95,7 +95,7 @@ def write_mzid_info(peak_list_file_names,
 
 def write_other_info(upload_id, crosslinks, ident_count, ident_file_size, upload_warnings, cur, con):
     try:
-        cur.execute("""UPDATE uploads SET contains_crosslinks = (%s), ident_count = (%s), ident_file_size = (%s)
+        cur.execute("""UPDATE upload SET contains_crosslinks = (%s), ident_count = (%s), ident_file_size = (%s)
                 , upload_warnings = (%s)
                  WHERE id = (%s);""",
                     (crosslinks, ident_count, ident_file_size, json.dumps(upload_warnings), upload_id))
@@ -109,7 +109,7 @@ def write_other_info(upload_id, crosslinks, ident_count, ident_file_size, upload
 
 def write_error(upload_id, error_type, error, cur, con):
     try:
-        cur.execute("""UPDATE uploads SET error_type = %s
+        cur.execute("""UPDATE upload SET error_type = %s
                     , upload_error = %s
                     WHERE id = %s;""", (error_type, error, upload_id))
         con.commit()

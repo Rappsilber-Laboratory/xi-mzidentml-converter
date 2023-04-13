@@ -31,7 +31,7 @@ def new_upload(inj_list, cur, con):
         cur.execute("""
     INSERT INTO upload (
         user_id,
-        filename,
+        identification_file_name,
         origin,       
         upload_time
     )

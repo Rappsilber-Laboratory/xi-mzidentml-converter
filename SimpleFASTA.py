@@ -13,9 +13,9 @@ def get_db_sequence_dict(fasta_file_list):
                 if line.startswith(">"):
                     if identifier is not None:
                         add_entry(identifier, sequence, description, db_sequence_dict)
-
-                        # clear sequence
+                        identifier = None
                         sequence = ""
+                        description = None
 
                     # get new identifier
                     identifier = line

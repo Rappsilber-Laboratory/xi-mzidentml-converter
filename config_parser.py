@@ -2,26 +2,29 @@ from configparser import ConfigParser
 import os
 
 
-def parse_info(filename, section='postgresql'):
+def parse_config(filename, section='postgresql'):
     # create a parser
     parser = ConfigParser()
     # read config file
     parser.read(filename)
 
     # get section, default to postgresql
-    section_info = {}
+    configs = {}
     if parser.has_section(section):
         params = parser.items(section)
         for param in params:
-            section_info[param[0]] = param[1]
+            configs[param[0]] = param[1]
     else:
         raise Exception('Section {0} not found in the {1} file'.format(section, filename))
-    return section_info
+    return configs
 
 
 def get_conn_str():
+    """
+    Get database related configurations
+    """
     config = os.environ.get('DB_CONFIG', 'database.ini')
-    db_info = parse_info(config, 'postgresql')
+    db_info = parse_config(config)
     hostname = db_info.get("host")
     database = db_info.get("database")
     username = db_info.get("user")
@@ -36,3 +39,12 @@ def security_API_key():
     security_info = parse_info(config, 'security')
     apikey = security_info.get("apikey")
     return apikey
+
+
+def get_api_configs():
+    """
+    Get API related configurations
+    """
+    config = os.environ.get('DB_CONFIG', 'database.ini')
+    api_configs = parse_config(config, "api")
+    return api_configs

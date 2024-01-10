@@ -27,7 +27,7 @@ def create_schema(connection_str):
 
 if __name__ == "__main__":
     try:
-        from db_config_parser import get_conn_str
+        from config_parser import get_conn_str
     except ModuleNotFoundError:
         raise ModuleNotFoundError(
             'Database credentials missing! '

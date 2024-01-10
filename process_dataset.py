@@ -16,6 +16,9 @@ from parser.MzIdParser import MzIdParser
 from parser.writer import Writer
 from db_config_parser import get_conn_str
 import logging.config
+from parser.api_writer import Writer, APIWriter
+from config_parser import get_conn_str
+from parser.database_writer import DatabaseWriter
 
 logging.config.fileConfig("logging.ini")
 logger = logging.getLogger(__name__)
@@ -27,11 +30,16 @@ def main(args):
     else:
         temp_dir = os.path.expanduser('~/mzId_convertor_temp')
 
+    if args.writer:
+        writer_method = args.writer
+        if not (writer_method.lower() == 'api' or writer_method.lower() == 'database'):
+            raise ValueError('Writer method not supported! please use "api" or "database"')
+
     if args.pxid:
         px_accessions = args.pxid
         for px_accession in px_accessions:
             # convert_pxd_accession(px_accession, temp_dir, args.dontdelete)
-            convert_pxd_accession_from_pride(px_accession, temp_dir, args.dontdelete)
+            convert_pxd_accession_from_pride(px_accession, temp_dir, writer_method, args.dontdelete)
     elif args.ftp:
         ftp_url = args.ftp
         if args.identifier:
@@ -39,14 +47,14 @@ def main(args):
         else:
             parsed_url = urlparse(ftp_url)
             project_identifier = parsed_url.path.rsplit("/", 1)[-1]
-        convert_from_ftp(ftp_url, temp_dir, project_identifier, args.dontdelete)
+        convert_from_ftp(ftp_url, temp_dir, project_identifier, writer_method, args.dontdelete)
     else:
         local_dir = args.dir
         if args.identifier:
             project_identifier = args.identifier
         else:
             project_identifier = local_dir.rsplit("/", 1)[-1]
-        convert_dir(local_dir, project_identifier, nopeaklist=args.nopeaklist)
+        convert_dir(local_dir, project_identifier, writer_method, nopeaklist=args.nopeaklist)
 
 
 def convert_pxd_accession(px_accession, temp_dir, dont_delete=False):
@@ -71,7 +79,7 @@ def convert_pxd_accession(px_accession, temp_dir, dont_delete=False):
         raise Exception('Error: ProteomeXchange returned status code ' + str(px_response.status_code))
 
 
-def convert_pxd_accession_from_pride(px_accession, temp_dir, dont_delete=False):
+def convert_pxd_accession_from_pride(px_accession, temp_dir, writer_method, dont_delete=False):
     # get ftp location from PRIDE API
     px_url = 'https://www.ebi.ac.uk/pride/ws/archive/v2/files/byProject?accession=' + px_accession
     logger.info('GET request to PRIDE API: ' + px_url)
@@ -101,14 +109,14 @@ def convert_pxd_accession_from_pride(px_accession, temp_dir, dont_delete=False):
 
                     logger.info('PRIDE FTP path : ' + parent_folder)
                     break;
-        convert_from_ftp(ftp_url, temp_dir, px_accession, dont_delete)
+        convert_from_ftp(ftp_url, temp_dir, px_accession,writer_method, dont_delete)
         if not ftp_url:
             raise Exception('Error: Public File location not found in PRIDE API response')
     else:
         raise Exception('Error: PRIDE API returned status code ' + str(pride_response.status_code))
 
 
-def convert_from_ftp(ftp_url, temp_dir, project_identifier, dont_delete):
+def convert_from_ftp(ftp_url, temp_dir, project_identifier, writer_method, dont_delete):
     if not ftp_url.startswith('ftp://'):
         raise Exception('Error: FTP location must start with ftp://')
     if not os.path.isdir(temp_dir):
@@ -147,7 +155,7 @@ def convert_from_ftp(ftp_url, temp_dir, project_identifier, dont_delete):
                 # error_msg = "%s: %s" % (f, e.args[0])
                 # self.logger.error(error_msg)
                 raise e
-    convert_dir(path, project_identifier)
+    convert_dir(path, project_identifier, writer_method)
     if not dont_delete:
         # remove downloaded files
         try:
@@ -191,7 +199,7 @@ def get_ftp_file_list(ftp_ip, ftp_dir):
     return filelist
 
 
-def convert_dir(local_dir, project_identifier, nopeaklist=False):
+def convert_dir(local_dir, project_identifier,writer_method, nopeaklist=False):
     # logging.basicConfig(level=logging.DEBUG,
     #                     format='%(asctime)s %(levelname)s %(name)s %(message)s')
     # logger = logging.getLogger(__name__)
@@ -201,7 +209,10 @@ def convert_dir(local_dir, project_identifier, nopeaklist=False):
         if file.endswith(".mzid") or file.endswith(".mzid.gz"):
             logger.info("Processing " + file)
             conn_str = get_conn_str()
-            writer = Writer(conn_str, pxid=project_identifier)
+            if writer_method.lower() == 'api':
+                writer = APIWriter(conn_str, pxid=project_identifier)
+            elif writer_method.lower() == 'database':
+                writer = DatabaseWriter(conn_str, pxid=project_identifier)
             id_parser = MzIdParser(os.path.join(local_dir, file), local_dir, peaklist_dir, writer, logger)
             try:
                 id_parser.parse()
@@ -233,6 +244,7 @@ if __name__ == "__main__":
     parser.add_argument('-n', '--nopeaklist',
                         help='No peak list files available, only works in comination with --dir arg',
                         action='store_true')
+    parser.add_argument('-w', '--writer', help='Save data to database or API')
     try:
         logger.info("process_dataset.py is running!")
         main(parser.parse_args())

@@ -1,3 +1,4 @@
+import base64
 import gzip
 import json
 import ntpath
@@ -589,6 +590,9 @@ class MzIdParser:
                     mz_blob = struct.pack(f'{len(mz_blob)}d', *mz_blob)
                     intensity_blob = spectrum.int_values.tolist()
                     intensity_blob = struct.pack(f'{len(intensity_blob)}d', *intensity_blob)
+                    # Encode binary data using base64 to enable transmitting in API call and then decode in API
+                    mz_base64 = base64.b64encode(mz_blob).decode('utf-8')
+                    intensity_base64 = base64.b64encode(intensity_blob).decode('utf-8')
 
                     spectra.append({
                         'id': sid_result["spectrumID"],
@@ -597,8 +601,8 @@ class MzIdParser:
                         'peak_list_file_name': ntpath.basename(peak_list_reader.peak_list_path),
                         'precursor_mz': spectrum.precursor['mz'],
                         'precursor_charge': spectrum.precursor['charge'],
-                        'mz': mz_blob,
-                        'intensity': intensity_blob,
+                        'mz': mz_base64,
+                        'intensity': intensity_base64,
                         'retention_time': spectrum.rt
                     })
 
@@ -738,7 +742,7 @@ class MzIdParser:
             bib_refs.append(bib)
         self.mzid_reader.reset()
 
-        self.writer.write_mzid_info(analysis_software_list, spectra_formats, provider, audits, samples, bib_refs)
+        self.writer.write_mzid_info(analysis_software_list, spectra_formats, provider, audits, samples, bib_refs, self.writer.upload_id)
 
         self.logger.info('getting upload info - done  Time: {} sec'.format(
             round(time() - upload_info_start_time, 2)))
@@ -748,27 +752,23 @@ class MzIdParser:
 
     def write_new_upload(self):
         """Write new upload."""
-        filename = os.path.basename(self.mzid_path)
-        upload_data = {
-            'identification_file_name': filename,
-            'project_id': self.writer.pxid,
-            'identification_file_name_clean': re.sub(r'[^0-9a-zA-Z-]+', '-', filename)
-        }
-        # self.writer.write_data('Upload', upload_data)
         try:
-            table = Table('upload', self.writer.meta, autoload_with=self.writer.engine, quote=False)
-            with self.writer.engine.connect() as conn:
-                statement = table.insert().values(upload_data).returning(table.columns[0])  # RETURNING id AS upload_id
-                result = conn.execute(statement)
-                conn.commit()
-                self.writer.upload_id = result.fetchall()[0][0]
-                conn.close()
+            filename = os.path.basename(self.mzid_path)
+            upload_data = {
+                'identification_file_name': filename,
+                'project_id': self.writer.pxid,
+                'identification_file_name_clean': re.sub(r'[^0-9a-zA-Z-]+', '-', filename)
+            }
+            table = 'upload'
+
+            response = self.writer.write_new_upload(table, upload_data)
+            self.writer.upload_id =int(response)
         except SQLAlchemyError as e:
             print(f"Error during database insert: {e}")
 
     def write_other_info(self):
         """Write remaining information into Upload table."""
-        self.writer.write_other_info(self.contains_crosslinks, list(self.warnings))
+        self.writer.write_other_info(self.contains_crosslinks, list(self.warnings), self.writer.upload_id)
 
     def get_cv_params(self, element, super_cls_accession=None):
         """

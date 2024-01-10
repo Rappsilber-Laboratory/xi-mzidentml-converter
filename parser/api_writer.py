@@ -31,7 +31,7 @@ class APIWriter(Writer):
 
             # Check the response status code and handle it as needed
             if response.status_code == 200:
-                print("Request successful")
+                print("Request successful:" + API_ENDPOINT)
             else:
                 print(f"Unexpected status code: {response.status_code}")
         except Exception as e:

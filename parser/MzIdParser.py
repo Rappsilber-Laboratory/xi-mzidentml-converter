@@ -591,8 +591,9 @@ class MzIdParser:
                     intensity_blob = spectrum.int_values.tolist()
                     intensity_blob = struct.pack(f'{len(intensity_blob)}d', *intensity_blob)
                     # Encode binary data using base64 to enable transmitting in API call and then decode in API
-                    mz_base64 = base64.b64encode(mz_blob).decode('utf-8')
-                    intensity_base64 = base64.b64encode(intensity_blob).decode('utf-8')
+                    if isinstance(writer, APIWriter):
+                        mz_blob = base64.b64encode(mz_blob).decode('utf-8')
+                        intensity_blob = base64.b64encode(intensity_blob).decode('utf-8')
 
                     spectra.append({
                         'id': sid_result["spectrumID"],
@@ -601,8 +602,8 @@ class MzIdParser:
                         'peak_list_file_name': ntpath.basename(peak_list_reader.peak_list_path),
                         'precursor_mz': spectrum.precursor['mz'],
                         'precursor_charge': spectrum.precursor['charge'],
-                        'mz': mz_base64,
-                        'intensity': intensity_base64,
+                        'mz': mz_blob,
+                        'intensity': intensity_blob,
                         'retention_time': spectrum.rt
                     })
 

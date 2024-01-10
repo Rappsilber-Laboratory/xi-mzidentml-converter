@@ -14,7 +14,6 @@ from urllib.parse import urlparse
 
 from parser.MzIdParser import MzIdParser
 from parser.writer import Writer
-from db_config_parser import get_conn_str
 import logging.config
 from parser.api_writer import Writer, APIWriter
 from config_parser import get_conn_str

@@ -74,7 +74,7 @@ class DatabaseWriter:
             conn.execute(stmt)
             conn.commit()
 
-    def write_other_info(self, contains_crosslinks, upload_warnings):
+    def write_other_info(self, contains_crosslinks, upload_warnings, upload_id):
         """
         Update Upload row with remaining info.
 
@@ -85,7 +85,7 @@ class DatabaseWriter:
         """
         upload = Table("upload", self.meta, autoload_with=self.engine, quote=False)
         with self.engine.connect() as conn:
-            stmt = upload.update().where(upload.c.id == str(self.upload_id)).values(
+            stmt = upload.update().where(upload.c.id == str(upload_id)).values(
                 contains_crosslinks=contains_crosslinks,
                 upload_warnings=upload_warnings,
             )

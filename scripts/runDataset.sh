@@ -23,7 +23,7 @@ printUsage() {
     echo "$ ./scripts/xi-mzidentml-converter.sh"
     echo ""
     echo "Usage: ./xi-mzidentml-converter.sh -a|--accession [-e|--email]"
-    echo "     Example: ./xi-mzidentml-converter.sh -p PXD036833 --dontdelete -w api"
+    echo "     Example: ./xi-mzidentml-converter.sh -a PXD036833 --dontdelete -w api"
     echo "     (required) accession         : the project accession of a crosslinking dataset"
     echo "     (optional) email             :  Email to send LSF notification"
 }

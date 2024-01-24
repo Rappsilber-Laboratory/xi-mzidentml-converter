@@ -51,7 +51,7 @@ setup(
         'passlib',
         'jose'
     ],
-    entry_points={"console_scripts": ["xi-mzidentml-converter = process_dataset:main"]},
+    entry_points={"console_scripts": ["process_dataset_test = process_dataset_test:main"]},
     platforms=["any"],
     classifiers=[
         "Programming Language :: Python :: 3",

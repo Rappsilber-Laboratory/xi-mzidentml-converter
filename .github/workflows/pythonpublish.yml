@@ -8,9 +8,14 @@
 
 name: Upload Python Package
 
+#on:
+#  release:
+#    types: [published]
 on:
-  release:
-    types: [published]
+  push:
+    branches:
+      - pride
+  workflow_dispatch:
 
 permissions:
   contents: read

@@ -32,7 +32,6 @@ setup(
     url="https://github.com/PRIDE-Archive/xi-mzidentml-converter",
     packages=find_packages(),
     install_requires=[
-        'python >= 3.10',
         'fastapi>=0.68.0,<0.69.0',
         'uvicorn<=0.16.0,>=0.15.0',
         'lxml>=4.9.1',

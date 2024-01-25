@@ -61,6 +61,32 @@ async def get_peaklist(id, sd_ref, upload_id):
             raise error
         return data
 
+@xiview_data_router.get('/get_datasets', tags=["xiVIEW"])
+async def get_datasets():
+    conn = None
+    ds_rows = []
+    error = None
+    try:
+        conn = await get_db_connection()
+        cur = conn.cursor()
+        query = """SELECT DISTINCT project_id, identification_file_name FROM upload;"""
+        # logger.debug(query)
+        cur.execute(query)
+        ds_rows = cur.fetchall()
+        # logger.info("finished")
+        cur.close()
+    except (Exception, psycopg2.DatabaseError) as e:
+        print(e)
+        error = e
+    finally:
+        if conn is not None:
+            conn.close()
+            # logger.debug('Database connection closed.')
+        if error is not None:
+            raise error
+    return ds_rows
+
+
 
 async def get_data_object(ids, pxid):
     """ Connect to the PostgreSQL database server """

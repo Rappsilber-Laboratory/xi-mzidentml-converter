@@ -19,7 +19,7 @@ from parser.api_writer import Writer, APIWriter
 from config_parser import get_conn_str
 from parser.database_writer import DatabaseWriter
 
-logging.config.fileConfig("logging.ini")
+logging.config.fileConfig("../logging.ini")
 logger = logging.getLogger(__name__)
 
 

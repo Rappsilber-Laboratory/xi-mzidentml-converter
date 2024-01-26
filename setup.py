@@ -51,7 +51,7 @@ setup(
         'passlib',
         'jose'
     ],
-    entry_points={"console_scripts": ["process_dataset_test = process_dataset_test:main"]},
+    entry_points={"console_scripts": ["process = parser.parser_cli:main"]},
     platforms=["any"],
     classifiers=[
         "Programming Language :: Python :: 3",

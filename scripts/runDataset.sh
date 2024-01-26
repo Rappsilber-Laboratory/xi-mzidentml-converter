@@ -54,6 +54,10 @@ JOB_NAME="${JOB_NAME}-${PROJECT_ACCESSION}"
 ##### Change directory to where the script locate
 cd ${0%/*}
 
+##### Activate conda environment
+source /hps/software/users/juan/pride/anaconda3/etc/profile.d/conda.sh
+conda activate xi-mzidentml-converter
+
 #### RUN it on the cluster #####
 sbatch -t 7-0 \
      --mem=${MEMORY_LIMIT} \
@@ -63,4 +67,4 @@ sbatch -t 7-0 \
      --job-name=${JOB_NAME} \
      -o /dev/null \
      -e /dev/null \
-     --wrap="python process_dataset.py -p ${PROJECT_ACCESSION} --dontdelete -w api"
+     --wrap="python3 process_dataset -p ${PROJECT_ACCESSION} --dontdelete -w api"

@@ -246,6 +246,7 @@ if __name__ == "__main__":
     parser.add_argument('-w', '--writer', help='Save data to database or API')
     try:
         logger.info("process_dataset.py is running!")
+        print("process_dataset.py is running!")
         main(parser.parse_args())
         sys.exit(0)
     except Exception as ex:

@@ -48,6 +48,7 @@ fi
 
 DATE=$(date +"%Y%m%d%H%M")
 LOG_FILE_NAME="${JOB_NAME}/${PROJECT_ACCESSION}-${DATE}.log"
+LOG_FILE_ERROR_NAME="${JOB_NAME}/${PROJECT_ACCESSION}-${DATE}-error.log"
 JOB_NAME="${JOB_NAME}-${PROJECT_ACCESSION}"
 
 
@@ -65,6 +66,6 @@ sbatch -t 7-0 \
      --mail-type=ALL \
      --mail-user=${JOB_EMAIL} \
      --job-name=${JOB_NAME} \
-     -o /dev/null \
-     -e /dev/null \
-     --wrap="python3 process_dataset -p ${PROJECT_ACCESSION} --dontdelete -w api"
+     -o ${LOG_FILE_NAME} \
+     -e ${LOG_FILE_ERROR_NAME} \
+     --wrap="process_dataset -p ${PROJECT_ACCESSION} --dontdelete -w api"

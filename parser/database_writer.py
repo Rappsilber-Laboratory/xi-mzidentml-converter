@@ -1,6 +1,6 @@
 from sqlalchemy import create_engine, MetaData
 from sqlalchemy import Table
-from create_db_schema import create_schema
+from parser.database.create_db_schema import create_schema
 from sqlalchemy_utils import database_exists
 
 

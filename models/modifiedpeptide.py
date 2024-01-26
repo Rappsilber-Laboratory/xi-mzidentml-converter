@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy import ForeignKey, Text, Integer, JSON, FLOAT
-from app.models.base import Base
+from models.base import Base
 from typing import Optional, Any
 
 class ModifiedPeptide(Base):

@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy import ForeignKey, Text, BOOLEAN, BIGINT, FLOAT, JSON, ForeignKeyConstraint, Integer
-from app.models.base import Base
+from models.base import Base
 from typing import Any
 
 

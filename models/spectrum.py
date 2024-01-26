@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy import ForeignKey, Text, LargeBinary, SMALLINT, FLOAT, Integer
-from app.models.base import Base
+from models.base import Base
 
 
 class Spectrum(Base):

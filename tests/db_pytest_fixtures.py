@@ -1,4 +1,4 @@
-from create_db_schema import create_schema, create_db, drop_db
+from parser.database.create_db_schema import create_schema, create_db, drop_db
 import pytest
 from sqlalchemy import create_engine
 

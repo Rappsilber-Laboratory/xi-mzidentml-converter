@@ -1,7 +1,7 @@
 import traceback
 import requests
 
-from config_parser import get_api_configs
+from config.config_parser import get_api_configs
 from parser.writer import Writer
 
 

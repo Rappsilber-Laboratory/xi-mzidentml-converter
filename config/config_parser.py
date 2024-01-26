@@ -23,7 +23,7 @@ def get_conn_str():
     """
     Get database related configurations
     """
-    config = os.environ.get('DB_CONFIG', 'database.ini')
+    config = os.environ.get('DB_CONFIG', '../database.ini')
     db_info = parse_config(config)
     hostname = db_info.get("host")
     database = db_info.get("database")
@@ -34,17 +34,17 @@ def get_conn_str():
     return conn_str
 
 
-def security_API_key():
-    config = os.environ.get('DB_CONFIG', 'database.ini')
-    security_info = parse_info(config, 'security')
-    apikey = security_info.get("apikey")
-    return apikey
+# def security_API_key():
+#     config = os.environ.get('DB_CONFIG', '../database.ini')
+#     security_info = parse_config(config, 'security')
+#     apikey = security_info.get("apikey")
+#     return apikey
 
 
 def get_api_configs():
     """
     Get API related configurations
     """
-    config = os.environ.get('DB_CONFIG', 'database.ini')
+    config = os.environ.get('DB_CONFIG', '../database.ini')
     api_configs = parse_config(config, "api")
     return api_configs

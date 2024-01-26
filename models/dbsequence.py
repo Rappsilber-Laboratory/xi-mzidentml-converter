@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy import ForeignKey, Text, Integer
-from app.models.base import Base
+from models.base import Base
 
 
 class DBSequence(Base):

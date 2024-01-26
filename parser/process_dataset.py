@@ -13,10 +13,9 @@ import shutil
 from urllib.parse import urlparse
 
 from parser.MzIdParser import MzIdParser
-from parser.writer import Writer
 import logging.config
-from parser.api_writer import Writer, APIWriter
-from config_parser import get_conn_str
+from parser.api_writer import APIWriter
+from config.config_parser import get_conn_str
 from parser.database_writer import DatabaseWriter
 
 logging.config.fileConfig("../logging.ini")

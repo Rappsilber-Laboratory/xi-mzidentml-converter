@@ -62,10 +62,10 @@ conda activate xi-mzidentml-converter
 #### RUN it on the cluster #####
 sbatch -t 7-0 \
      --mem=${MEMORY_LIMIT} \
-     -p datamover \
+     --partition datamover \
      --mail-type=ALL \
      --mail-user=${JOB_EMAIL} \
      --job-name=${JOB_NAME} \
-     -o ${LOG_FILE_NAME} \
-     -e ${LOG_FILE_ERROR_NAME} \
+     --output ${LOG_FILE_NAME} \
+     --error ${LOG_FILE_ERROR_NAME} \
      --wrap="process_dataset -p ${PROJECT_ACCESSION} --dontdelete -w api"

@@ -18,7 +18,7 @@ from parser.api_writer import APIWriter
 from config.config_parser import get_conn_str
 from parser.database_writer import DatabaseWriter
 
-logging_config_file = os.path.join(os.path.dirname(__file__), '../logging.ini')
+logging_config_file = os.path.join(os.path.dirname(__file__), '../config/logging.ini')
 logging.config.fileConfig(logging_config_file)
 logger = logging.getLogger(__name__)
 

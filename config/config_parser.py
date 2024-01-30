@@ -23,7 +23,8 @@ def get_conn_str():
     """
     Get database related configurations
     """
-    config = os.environ.get('DB_CONFIG', '../database.ini')
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    config = os.environ.get('DB_CONFIG', os.path.join(script_dir, "../database.ini"))
     db_info = parse_config(config)
     hostname = db_info.get("host")
     database = db_info.get("database")
@@ -45,6 +46,7 @@ def get_api_configs():
     """
     Get API related configurations
     """
-    config = os.environ.get('DB_CONFIG', '../database.ini')
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    config = os.environ.get('DB_CONFIG', os.path.join(script_dir, "../database.ini"))
     api_configs = parse_config(config, "api")
     return api_configs

@@ -23,37 +23,64 @@ logging.config.fileConfig(logging_config_file)
 logger = logging.getLogger(__name__)
 
 
-def main(args):
-    if args.temp:
-        temp_dir = os.path.expanduser(args.temp)
-    else:
-        temp_dir = os.path.expanduser('~/mzId_convertor_temp')
-
-    if args.writer:
-        writer_method = args.writer
-        if not (writer_method.lower() == 'api' or writer_method.lower() == 'database'):
-            raise ValueError('Writer method not supported! please use "api" or "database"')
-
-    if args.pxid:
-        px_accessions = args.pxid
-        for px_accession in px_accessions:
-            # convert_pxd_accession(px_accession, temp_dir, args.dontdelete)
-            convert_pxd_accession_from_pride(px_accession, temp_dir, writer_method, args.dontdelete)
-    elif args.ftp:
-        ftp_url = args.ftp
-        if args.identifier:
-            project_identifier = args.identifier
+def main():
+    parser = argparse.ArgumentParser(
+        description='Process mzIdentML files in a dataset and load them into a relational database.')
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument('-p', '--pxid', nargs='+',
+                       help='proteomeXchange accession, should be of the form PXDnnnnnn or numbers only', )
+    group.add_argument('-f', '--ftp',
+                       help='process files from specified ftp location, e.g. ftp://ftp.jpostdb.org/JPST001914/')
+    group.add_argument('-d', '--dir',
+                       help='process files in specified local directory, e.g. /home/user/data/JPST001914')
+    parser.add_argument('-i', '--identifier',
+                        help='identifier to use for dataset (if providing '
+                             'proteome exchange accession these are always used instead and this arg is ignored)')
+    parser.add_argument('--dontdelete', action='store_true', help='Do not delete downloaded data after processing')
+    parser.add_argument('-t', '--temp', action='store_true', help='Temp folder to download data files into')
+    parser.add_argument('-n', '--nopeaklist',
+                        help='No peak list files available, only works in comination with --dir arg',
+                        action='store_true')
+    parser.add_argument('-w', '--writer', help='Save data to database(-w db) or API(-w api)')
+    args = parser.parse_args()
+    try:
+        logger.info("process_dataset.py is running!")
+        print("process_dataset.py is running!")
+        if args.temp:
+            temp_dir = os.path.expanduser(args.temp)
         else:
-            parsed_url = urlparse(ftp_url)
-            project_identifier = parsed_url.path.rsplit("/", 1)[-1]
-        convert_from_ftp(ftp_url, temp_dir, project_identifier, writer_method, args.dontdelete)
-    else:
-        local_dir = args.dir
-        if args.identifier:
-            project_identifier = args.identifier
+            temp_dir = os.path.expanduser('~/mzId_convertor_temp')
+
+        if args.writer:
+            writer_method = args.writer
+            if not (writer_method.lower() == 'api' or writer_method.lower() == 'db'):
+                raise ValueError('Writer method not supported! please use "api" or "database"')
+
+        if args.pxid:
+            px_accessions = args.pxid
+            for px_accession in px_accessions:
+                # convert_pxd_accession(px_accession, temp_dir, args.dontdelete)
+                convert_pxd_accession_from_pride(px_accession, temp_dir, writer_method, args.dontdelete)
+        elif args.ftp:
+            ftp_url = args.ftp
+            if args.identifier:
+                project_identifier = args.identifier
+            else:
+                parsed_url = urlparse(ftp_url)
+                project_identifier = parsed_url.path.rsplit("/", 1)[-1]
+            convert_from_ftp(ftp_url, temp_dir, project_identifier, writer_method, args.dontdelete)
         else:
-            project_identifier = local_dir.rsplit("/", 1)[-1]
-        convert_dir(local_dir, project_identifier, writer_method, nopeaklist=args.nopeaklist)
+            local_dir = args.dir
+            if args.identifier:
+                project_identifier = args.identifier
+            else:
+                project_identifier = local_dir.rsplit("/", 1)[-1]
+            convert_dir(local_dir, project_identifier, writer_method, nopeaklist=args.nopeaklist)
+        sys.exit(0)
+    except Exception as ex:
+        logger.error(ex)
+        traceback.print_stack(ex)
+        sys.exit(1)
 
 
 def convert_pxd_accession(px_accession, temp_dir, dont_delete=False):
@@ -210,7 +237,7 @@ def convert_dir(local_dir, project_identifier,writer_method, nopeaklist=False):
             conn_str = get_conn_str()
             if writer_method.lower() == 'api':
                 writer = APIWriter(conn_str, pxid=project_identifier)
-            elif writer_method.lower() == 'database':
+            elif writer_method.lower() == 'db':
                 writer = DatabaseWriter(conn_str, pxid=project_identifier)
             id_parser = MzIdParser(os.path.join(local_dir, file), local_dir, peaklist_dir, writer, logger)
             try:
@@ -226,30 +253,4 @@ def convert_dir(local_dir, project_identifier,writer_method, nopeaklist=False):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description='Process mzIdentML files in a dataset and load them into a relational database.')
-    group = parser.add_mutually_exclusive_group(required=True)
-    group.add_argument('-p', '--pxid', nargs='+',
-                       help='proteomeXchange accession, should be of the form PXDnnnnnn or numbers only', )
-    group.add_argument('-f', '--ftp',
-                       help='process files from specified ftp location, e.g. ftp://ftp.jpostdb.org/JPST001914/')
-    group.add_argument('-d', '--dir',
-                       help='process files in specified local directory, e.g. /home/user/data/JPST001914')
-    parser.add_argument('-i', '--identifier',
-                        help='identifier to use for dataset (if providing '
-                             'proteome exchange accession these are always used instead and this arg is ignored)')
-    parser.add_argument('--dontdelete', action='store_true', help='Do not delete downloaded data after processing')
-    parser.add_argument('-t', '--temp', action='store_true', help='Temp folder to download data files into')
-    parser.add_argument('-n', '--nopeaklist',
-                        help='No peak list files available, only works in comination with --dir arg',
-                        action='store_true')
-    parser.add_argument('-w', '--writer', help='Save data to database or API')
-    try:
-        logger.info("process_dataset.py is running!")
-        print("process_dataset.py is running!")
-        main(parser.parse_args())
-        sys.exit(0)
-    except Exception as ex:
-        logger.error(ex)
-        traceback.print_stack(ex)
-        sys.exit(1)
+   main()

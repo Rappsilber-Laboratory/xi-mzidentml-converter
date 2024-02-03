@@ -26,11 +26,11 @@ def get_conn_str():
     script_dir = os.path.dirname(os.path.abspath(__file__))
     config = os.environ.get('DB_CONFIG', os.path.join(script_dir, "../database.ini"))
     db_info = parse_config(config)
-    hostname = db_info.get("host")
-    database = db_info.get("database")
-    username = db_info.get("user")
-    password = db_info.get("password")
-    port = db_info.get("port")
+    hostname = os.environ.get('DB_HOST') or db_info.get("host")
+    database = os.environ.get('DB_DATABASE_NAME') or db_info.get("database")
+    username = os.environ.get('DB_USER') or db_info.get("user")
+    password = os.environ.get('DB_PASSWORD') or db_info.get("password")
+    port = os.environ.get('DB_PORT') or db_info.get("port")
     conn_str = f"postgresql://{username}:{password}@{hostname}:{port}/{database}"
     return conn_str
 
@@ -49,4 +49,7 @@ def get_api_configs():
     script_dir = os.path.dirname(os.path.abspath(__file__))
     config = os.environ.get('DB_CONFIG', os.path.join(script_dir, "../database.ini"))
     api_configs = parse_config(config, "api")
-    return api_configs
+    config= {"base_url": os.environ.get('BASE_URL') or api_configs.get("base_url"),
+             "api_key": os.environ.get('API_KEY') or api_configs.get("api_key"),
+             "api_key_value": os.environ.get('API_KEY_VALUE') or api_configs.get("api_key_value")}
+    return config

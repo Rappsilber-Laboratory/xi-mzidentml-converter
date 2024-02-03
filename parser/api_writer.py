@@ -17,6 +17,7 @@ class APIWriter(Writer):
         self.api_key_value = configs['api_key_value']
 
     def write_data(self, table, data):
+        response = None
         try:
             API_ENDPOINT = self.base_url+ "/write_data"
             API_KEY_VALUE =  self.api_key_value
@@ -36,12 +37,16 @@ class APIWriter(Writer):
                 print(f"Unexpected status code: {response.status_code}")
         except Exception as e:
             print(f"Caught an exception: {e}")
-            print(payload)
+            # print(payload)
             traceback.print_exc()
-        return response.json()
+        if response is not None:
+            return response.json()
+        else:
+            return None
 
 
     def write_new_upload(self, table, data):
+        response = None
 
         try:
             API_ENDPOINT = self.base_url + "/write_new_upload"
@@ -64,10 +69,14 @@ class APIWriter(Writer):
         except Exception as e:
             print(f"Caught an exception: {e}")
             traceback.print_exc()
-        return response.json()
+        if response is not None:
+            return response.json()
+        else:
+            return None
 
     def write_mzid_info(self, analysis_software_list, spectra_formats,
                         provider, audits, samples, bib, upload_id):
+        response = None
         try:
             API_ENDPOINT = self.base_url + "/write_mzid_info?upload_id="+str(upload_id)
             API_KEY_VALUE = self.api_key_value
@@ -83,24 +92,30 @@ class APIWriter(Writer):
             }
             response = requests.post(url=API_ENDPOINT, headers=headers, json=payload)
             response.raise_for_status()
+            result = response.json()
 
             # Check the response status code and handle it as needed
             if response.status_code == 200:
                 print("Request successful")
-                print(response.json())
+                print(result)
             else:
                 print(f"Unexpected status code: {response.status_code}")
 
-            print(response.json())
+            print(result)
         except Exception as e:
             print(f"Caught an exception: {e}")
             traceback.print_exc()
-        return response.json()
+        if response is not None:
+            return response.json()
+        else:
+            return None
 
 
     def write_other_info(self, contains_crosslinks, upload_warnings, upload_id):
+        response = None
         try:
-            API_ENDPOINT = "/write_other_info?upload_id="+str(upload_id)
+            #todo: use urljoin
+            API_ENDPOINT = self.base_url + "/write_other_info?upload_id="+str(upload_id)
             API_KEY_VALUE = self.api_key_value
             API_KEY = self.api_key
             headers = {'Content-Type': 'application/json', API_KEY: API_KEY_VALUE}
@@ -110,19 +125,23 @@ class APIWriter(Writer):
             }
             response = requests.post(url=API_ENDPOINT, headers=headers, json=payload)
             response.raise_for_status()
+            result = response.json()
 
             # Check the response status code and handle it as needed
             if response.status_code == 200:
                 print("Request successful")
-                print(response.json())
+                print(result)
             else:
                 print(f"Unexpected status code: {response.status_code}")
 
-            print(response.json())
+            print(result)
         except Exception as e:
             print(f"Caught an exception: {e}")
             traceback.print_exc()
-        return response.json()
+        if response is not None:
+            return response.json()
+        else:
+            return None
 
     def fill_in_missing_scores(self):
         """

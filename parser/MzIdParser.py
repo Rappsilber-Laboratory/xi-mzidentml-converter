@@ -5,6 +5,7 @@ import ntpath
 import os
 import re
 import struct
+import traceback
 import zipfile
 from time import time
 
@@ -593,7 +594,7 @@ class MzIdParser:
                     intensity_blob = spectrum.int_values.tolist()
                     intensity_blob = struct.pack(f'{len(intensity_blob)}d', *intensity_blob)
                     # Encode binary data using base64 to enable transmitting in API call and then decode in API
-                    if isinstance(writer, APIWriter):
+                    if isinstance(self.writer, APIWriter):
                         mz_blob = base64.b64encode(mz_blob).decode('utf-8')
                         intensity_blob = base64.b64encode(intensity_blob).decode('utf-8')
 
@@ -679,7 +680,8 @@ class MzIdParser:
                         self.writer.write_data('spectrumidentification', spectrum_identifications)
                         spectrum_identifications = []
                     except Exception as e:
-                        raise e
+                        print(f"Caught an exception while writing data: {e}")
+                        traceback.print_exc()
 
         # end main loop
         self.logger.info('main loop - done Time: {} sec'.format(

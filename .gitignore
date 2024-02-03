@@ -32,3 +32,5 @@ test.db
 database.ini
 kubernetes.yml
 Dockerfile
+xi_mzidentml_converter.egg-info
+build

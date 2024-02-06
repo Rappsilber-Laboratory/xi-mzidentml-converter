@@ -20,9 +20,9 @@ JOB_EMAIL="pride-report@ebi.ac.uk"
 ##### FUNCTIONS
 printUsage() {
     echo "Description: This will parse cross-linking dataset"
-    echo "$ ./scripts/xi-mzidentml-converter.sh"
+    echo "$ ./scripts/runDataset.sh"
     echo ""
-    echo "Usage: ./xi-mzidentml-converter.sh -a|--accession [-e|--email]"
+    echo "Usage: ./runDataset.sh -a|--accession [-e|--email]"
     echo "     Example: ./xi-mzidentml-converter.sh -a PXD036833 --dontdelete -w api"
     echo "     (required) accession         : the project accession of a crosslinking dataset"
     echo "     (optional) email             :  Email to send LSF notification"

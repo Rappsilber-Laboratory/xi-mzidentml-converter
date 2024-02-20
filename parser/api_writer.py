@@ -1,5 +1,6 @@
 import traceback
 import requests
+import json
 
 from config.config_parser import get_api_configs
 from parser.writer import Writer
@@ -27,6 +28,9 @@ class APIWriter(Writer):
                 "table": table,
                 "data": data,
             }
+            # Calculate the size of the payload
+            payload_size = len(json.dumps(payload))
+            print("Payload Size:", payload_size)  # Print the payload size
             response = requests.post(url=API_ENDPOINT, headers=headers, json=payload)
             response.raise_for_status()
 
@@ -57,6 +61,9 @@ class APIWriter(Writer):
                 "table": table,
                 "data": data,
             }
+            # Calculate the size of the payload
+            payload_size = len(json.dumps(payload))
+            print("write_new_upload Payload Size:", payload_size)  # Print the payload size
             response = requests.post(url=API_ENDPOINT, headers=headers, json=payload)
             response.raise_for_status()
 
@@ -90,6 +97,9 @@ class APIWriter(Writer):
                 "samples": samples,
                 "bib": bib,
             }
+            # Calculate the size of the payload
+            payload_size = len(json.dumps(payload))
+            print("write_mzid_info Payload Size:", payload_size)  # Print the payload size
             response = requests.post(url=API_ENDPOINT, headers=headers, json=payload)
             response.raise_for_status()
             result = response.json()

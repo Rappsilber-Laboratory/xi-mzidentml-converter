@@ -767,7 +767,10 @@ class MzIdParser:
             table = 'upload'
 
             response = self.writer.write_new_upload(table, upload_data)
-            self.writer.upload_id =int(response)
+            if response:
+                self.writer.upload_id =int(response)
+            else:
+                raise Exception("Response is not available to create a upload ID")
         except SQLAlchemyError as e:
             print(f"Error during database insert: {e}")
 

@@ -406,7 +406,7 @@ class FullCsvParser(AbstractCsvParser):
             #
             # SPECTRUM IDENTIFICATIONS
             #
-            scores = json.dumps({'score': score})
+            scores = {'score': score}
 
             # try:
             #     meta1 = id_item[self.meta_columns[0]]

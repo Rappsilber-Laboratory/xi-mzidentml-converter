@@ -1,3 +1,4 @@
+import re
 import sys
 import numpy as np
 from time import time
@@ -251,10 +252,11 @@ class AbstractCsvParser:
 
     def write_new_upload(self):
         """Write new upload."""
+        filename = os.path.basename(self.csv_path)
         upload_data = {
-            # 'id': self.writer.upload_id,
-            # 'user_id': self.writer.user_id,
-            'identification_file_name': os.path.basename(self.csv_path),
+            'identification_file_name': filename,
+            'project_id': self.writer.pxid,
+            'identification_file_name_clean': re.sub(r'[^0-9a-zA-Z-]+', '-', filename)
         }
         # self.writer.write_data('Upload', upload_data)
         table = Table('upload', self.writer.meta, autoload_with=self.writer.engine, quote=False)

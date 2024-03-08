@@ -134,6 +134,35 @@ def test_links_only_csv_parser_sqllite(tmpdir, db_info, use_database, engine):
     id_parser = parse_links_only_csv_into_sqllite(csv, None, tmpdir, logger, use_database, engine)
 
 
+def test_no_peak_lists_csv_parser_postgres2(tmpdir, db_info, use_database, engine):
+    # file paths
+    fixtures_dir = os.path.join(os.path.dirname(__file__), 'fixtures', 'csv_parser',
+                                'nopeaklist_csv')
+    csv = os.path.join(fixtures_dir, 'SRCH_10003.csv')
+    fasta_file = os.path.join(fixtures_dir, 'P02768_HSAActive.FASTA')
+    # copy fasta file to tmpdir so it is being read by the parser
+    copyfile(fasta_file, os.path.join(str(tmpdir), ntpath.basename(fasta_file)))
+
+    # parse the csv file
+    id_parser = parse_no_peak_lists_csv_into_postgresql(csv, None, tmpdir, logger, use_database, engine)
+
+    with engine.connect() as conn:
+
+        # DBSequence
+        stmt = Table("dbsequence", id_parser.writer.meta, autoload_with=id_parser.writer.engine,
+                     quote=False).select()
+        rs = conn.execute(stmt)
+        dbs = rs.fetchall()
+        assert len(dbs) == 1
+
+        # SpectrumIdentificationItem
+        stmt = Table("spectrumidentification", id_parser.writer.meta, autoload_with=id_parser.writer.engine,
+                     quote=False).select()
+        rs = conn.execute(stmt)
+        sii = rs.fetchall()
+        assert len(sii) == 289
+
+
 # def test_xispec_csv_parser_mzml(tmpdir):
 #     # file paths
 #     fixtures_dir = os.path.join(os.path.dirname(__file__), 'fixtures', 'csv_parser', 'xispec_mzml')

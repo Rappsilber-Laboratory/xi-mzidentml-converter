@@ -231,7 +231,7 @@ if __name__ == "__main__":
     parser.add_argument('--dontdelete', action='store_true', help='Do not delete downloaded data after processing')
     parser.add_argument('-t', '--temp', action='store_true', help='Temp folder to download data files into')
     parser.add_argument('-n', '--nopeaklist',
-                        help='No peak list files available, only works in comination with --dir arg',
+                        help='No peak list files available, only works in combination with --dir arg',
                         action='store_true')
     try:
         logger.info("process_dataset.py is running!")

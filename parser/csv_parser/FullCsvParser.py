@@ -1,7 +1,6 @@
 from .AbstractCsvParser import AbstractCsvParser, CsvParseException
 from time import time
 import re
-import json
 
 
 class FullCsvParser(AbstractCsvParser):
@@ -33,6 +32,10 @@ class FullCsvParser(AbstractCsvParser):
         'expmz',  # ToDo: required in mzid - also make required col?
         'calcmz'
     ]
+
+    '''
+    Main loop of the parser. Iterates over the rows of the csv file and parses the data into the database.
+    '''
 
     def main_loop(self):
         main_loop_start_time = time()
@@ -76,14 +79,6 @@ class FullCsvParser(AbstractCsvParser):
                 raise CsvParseException('Invalid rank: %s for row: %s' % (id_item['rank'], row_number))
 
             # pepSeq
-
-            # ToDo: reorder peptides by length and alphabetical?
-            # add cross-linker always to first peptide?
-            # From mzIdentML schema 1.2.0:
-            # the cross-link donor SHOULD contain the complete mass delta introduced by the cross-linking reagent,
-            # and that the cross-link acceptor reports a mass shift
-            # delta of zero. It is RECOMMENDED that the 'donor' peptide SHOULD be the longer peptide, followed by
-            # alphabetical order for equal length peptides.
 
             invalid_char_pattern_pepseq = '([^GALMFWKQESPVICYHRNDTXa-z:0-9(.)\-]+)'
             # pepSeq - 1
@@ -330,19 +325,8 @@ class FullCsvParser(AbstractCsvParser):
             if unique_pep_identifier1 not in seen_peptides:
                 seen_peptides.append(unique_pep_identifier1)
                 pep1_id = len(seen_peptides) - 1
-
-                peptide1 = {
-                    'id': pep1_id,
-                    'upload_id': self.writer.upload_id,
-                    'base_sequence': pepseq1,
-                    'mod_accessions': [],  # mod_accessions,
-                    'mod_positions': [],  # mod_pos,
-                    'mod_monoiso_mass_deltas': [],  # mod_masses,
-                    'link_site1': linkpos1,
-                    'crosslinker_modmass': crosslink_mod_mass,
-                    'crosslinker_pair_id': str(crosslinker_pair_id),
-                }
-
+                peptide1 = create_peptide_from_seq_mods(pepseq1, pep1_id, linkpos1, crosslink_mod_mass,
+                                                        crosslinker_pair_id, self.writer.upload_id)
                 peptides.append(peptide1)
             else:
                 pep1_id = seen_peptides.index(unique_pep_identifier1)
@@ -354,18 +338,8 @@ class FullCsvParser(AbstractCsvParser):
                 if unique_pep_identifier2 not in seen_peptides:
                     seen_peptides.append(unique_pep_identifier2)
                     pep2_id = len(seen_peptides) - 1
-
-                    peptide2 = {
-                        'id': pep2_id,
-                        'upload_id': self.writer.upload_id,
-                        'base_sequence': pepseq2,
-                        'mod_accessions': [],  # mod_accessions,
-                        'mod_positions': [],  # mod_pos,
-                        'mod_monoiso_mass_deltas': [],  # mod_masses,
-                        'link_site1': linkpos2,
-                        'crosslinker_modmass': 0,
-                        'crosslinker_pair_id': str(crosslinker_pair_id),
-                    }
+                    peptide2 = create_peptide_from_seq_mods(pepseq2, pep2_id, linkpos2, 0, crosslinker_pair_id,
+                                                            self.writer.upload_id)
                     peptides.append(peptide2)
                 else:
                     pep2_id = seen_peptides.index(unique_pep_identifier2)
@@ -407,19 +381,6 @@ class FullCsvParser(AbstractCsvParser):
             # SPECTRUM IDENTIFICATIONS
             #
             scores = {'score': score}
-
-            # try:
-            #     meta1 = id_item[self.meta_columns[0]]
-            # except IndexError:
-            #     meta1 = ""
-            # try:
-            #     meta2 = id_item[self.meta_columns[1]]
-            # except IndexError:
-            #     meta2 = ""
-            # try:
-            #     meta3 = id_item[self.meta_columns[2]]
-            # except IndexError:
-            #     meta3 = ""
 
             spectrum_identification = {
                 'id': identification_id,
@@ -507,3 +468,48 @@ class FullCsvParser(AbstractCsvParser):
 
         self.logger.info('write spectra to DB - start - done. Time: '
                          + str(round(time() - db_wrap_up_start_time, 2)) + " sec")
+
+
+'''
+# function to create peptide from seq_mods (seq_mods contains modifications as lowercase letters or numbers)
+'''
+
+
+def create_peptide_from_seq_mods(seq_mods, pep_id, link_site1, crosslinker_modmass, crosslinker_pair_id, upload_id):
+    # create peptide from base sequence containing modifications as lowercase letters or numbers
+    base_sequence = seq_mods
+    mod_accessions = []
+    mod_pos = []
+    mod_masses = []
+    match = re.search(r'[^A-Z]+', base_sequence)
+    while match:
+        mod_accessions.append(match.group())
+        mod_pos.append(match.start())  # 0-based index of match is used as the 1-based position of the modification
+        mod_mass = None
+        # try to parse name as mass
+        try:
+            mod_mass = float(match.group())
+        except ValueError:
+            # remove start and trailing brackets then try to parse name as number
+            if match.group().startswith('(') and match.group().endswith(')'):
+                try:
+                    mod_mass = float(match.group()[1:-1])
+                except ValueError:
+                    pass
+        mod_masses.append(mod_mass)
+        # remove match from base sequence
+        base_sequence = base_sequence[:match.start()] + base_sequence[match.end():]
+        match = re.search(r'[^A-Z]+', base_sequence)
+
+    peptide = {
+        'id': pep_id,
+        'upload_id': upload_id,
+        'base_sequence': base_sequence,
+        'mod_accessions': mod_accessions,
+        'mod_positions': mod_pos,
+        'mod_monoiso_mass_deltas': mod_masses,
+        'link_site1': link_site1,
+        'crosslinker_modmass': crosslinker_modmass,
+        'crosslinker_pair_id': str(crosslinker_pair_id),
+    }
+    return peptide

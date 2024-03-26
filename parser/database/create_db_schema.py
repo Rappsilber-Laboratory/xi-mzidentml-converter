@@ -3,8 +3,7 @@ import logging.config
 from sqlalchemy import create_engine
 from sqlalchemy_utils import database_exists, drop_database, create_database
 
-from app.models.base import Base
-from app.models import *
+from models.base import Base
 
 
 def create_db(connection_str):
@@ -27,7 +26,7 @@ def create_schema(connection_str):
 
 if __name__ == "__main__":
     try:
-        from db_config_parser import get_conn_str
+        from config.config_parser import get_conn_str
     except ModuleNotFoundError:
         raise ModuleNotFoundError(
             'Database credentials missing! '

@@ -1,0 +1,26 @@
+# conda env create -f environment.yml
+name: xiview-mzidentml-converter
+channels:
+  - defaults
+dependencies:
+  - python=3.10
+  - pip
+  - pip:
+    - fastapi>=0.68.0,<0.69.0
+    - uvicorn<0.16.0,>=0.15.0
+    - lxml>=4.9.1
+    - numpy>=1.14.3
+    - pandas>=0.21.0
+    - pymzml>=0.7.8
+    - pyteomics>=3.4.2
+    - requests>=2.20.1
+    - urllib3>=1.24.2
+    - pytest
+    - psycopg2-binary
+    - sqlalchemy==2.0.21
+    - sqlalchemy-utils
+    - obonet
+    - python-multipart
+    - python-jose
+    - passlib
+    - jose

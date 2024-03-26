@@ -4,7 +4,7 @@ ToDo: add test that writes multiple mzids into the db and check that results are
 """
 import numpy as np
 from numpy.testing import assert_array_equal
-from parser.writer import Table
+from parser.api_writer import Table
 import os
 import logging
 from sqlalchemy import text

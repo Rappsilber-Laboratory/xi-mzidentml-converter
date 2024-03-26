@@ -14,6 +14,7 @@ logs/*
 logs/xi_mzidentml_converter.log
 !logs/.gitkeep
 .DS_Store
+/dist
 
 tests/test.db
 dbs/xiSPEC\.db
@@ -31,3 +32,5 @@ test.db
 database.ini
 kubernetes.yml
 Dockerfile
+xi_mzidentml_converter.egg-info
+build

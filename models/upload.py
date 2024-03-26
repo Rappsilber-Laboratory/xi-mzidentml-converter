@@ -1,6 +1,6 @@
-from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import ForeignKey, Text, JSON, BOOLEAN, TIMESTAMP, func, Integer
-from app.models.base import Base
+from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import Text, JSON, BOOLEAN, TIMESTAMP, func, Integer
+from models.base import Base
 from typing import Optional, Any
 import datetime
 

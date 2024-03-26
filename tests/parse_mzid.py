@@ -1,5 +1,5 @@
 from parser import MzIdParser
-from parser.writer import Writer
+from parser.api_writer import Writer
 from sqlalchemy import text
 from uuid import uuid4
 from .db_pytest_fixtures import *

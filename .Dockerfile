@@ -30,5 +30,5 @@ COPY parser ./parser
 COPY tests ./tests
 COPY *.py .
 COPY default.database.ini .
-COPY logging.ini .
+COPY config/logging.ini .
 COPY .kubernetes.yml .

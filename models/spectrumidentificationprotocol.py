@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy import ForeignKey, Text, JSON, Integer, Float
-from app.models.base import Base
+from models.base import Base
 from typing import Optional, Any
 
 

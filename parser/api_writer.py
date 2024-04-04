@@ -57,14 +57,11 @@ class APIWriter(Writer):
             API_KEY_VALUE = self.api_key_value
             API_KEY = self.api_key
             headers = {'Content-Type': 'application/json', API_KEY: API_KEY_VALUE}
-            payload = {
-                "table": table,
-                "data": data,
-            }
+
             # Calculate the size of the payload
-            payload_size = len(json.dumps(payload))
+            payload_size = len(json.dumps(data))
             print("write_new_upload Payload Size:", payload_size)  # Print the payload size
-            response = requests.post(url=API_ENDPOINT, headers=headers, json=payload)
+            response = requests.post(url=API_ENDPOINT, headers=headers, json=data)
             response.raise_for_status()
 
             # Check the response status code and handle it as needed

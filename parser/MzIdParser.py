@@ -702,10 +702,10 @@ class MzIdParser:
         upload_info_start_time = time()
         self.logger.info('parse upload info - start')
         self.mzid_reader.reset()
-        # Analysis Software List - mandatory element
+        # Analysis Software List - optional element
         try:
             analysis_software_list = self.mzid_reader.iterfind('AnalysisSoftwareList').next()
-        except StopIteration:
+        except Exception as e:
             analysis_software_list = {}
 
         spectra_formats = []
@@ -717,28 +717,22 @@ class MzIdParser:
         # Provider - optional element
         try:
             provider = self.mzid_reader.iterfind('Provider').next()
-        except StopIteration:
-            provider = {}
         except Exception as e:
-            raise MzIdParseException(type(e).__name__, e.args)
+            provider = {}
         self.mzid_reader.reset()
 
         # AuditCollection - optional element
         try:
             audits = self.mzid_reader.iterfind('AuditCollection').next()
-        except StopIteration:
-            audits = {}
         except Exception as e:
-            raise MzIdParseException(type(e).__name__, e.args)
+            audits = {}
         self.mzid_reader.reset()
 
         # AnalysisSampleCollection - optional element
         try:
             samples = self.mzid_reader.iterfind('AnalysisSampleCollection').next()['Sample']
-        except StopIteration:
-            samples = {}
         except Exception as e:
-            raise MzIdParseException(type(e).__name__, e.args)
+            samples = {}
         self.mzid_reader.reset()
 
         # BibliographicReference - optional element

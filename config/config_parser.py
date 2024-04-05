@@ -24,7 +24,7 @@ def get_conn_str():
     Get database related configurations
     """
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    config = os.environ.get('DB_CONFIG', os.path.join(script_dir, "database.ini"))
+    config = os.environ.get('DB_CONFIG', os.path.join(script_dir, "../database.ini"))
     db_info = parse_config(config)
     hostname = os.environ.get('DB_HOST') or db_info.get("host")
     database = os.environ.get('DB_DATABASE_NAME') or db_info.get("database")

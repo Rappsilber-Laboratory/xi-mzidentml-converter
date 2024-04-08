@@ -237,123 +237,125 @@ class MzIdParser:
             }
 
             # Modifications
-            mod_index = 0
-            for mod in sid_protocol['ModificationParams']['SearchModification']:
-                # parse specificity rule accessions
-                specificity_rules = mod.get('SpecificityRules', [])  # second param is default value
-                spec_rule_accessions = []  # there may be many
-                for spec_rule in specificity_rules:
-                    spec_rule_accession = cvquery(spec_rule)
-                    if len(spec_rule_accession) != 1:
+            if 'ModificationParams' in sid_protocol:
+                mod_index = 0
+                for mod in sid_protocol['ModificationParams']['SearchModification']:
+                    # parse specificity rule accessions
+                    specificity_rules = mod.get('SpecificityRules', [])  # second param is default value
+                    spec_rule_accessions = []  # there may be many
+                    for spec_rule in specificity_rules:
+                        spec_rule_accession = cvquery(spec_rule)
+                        if len(spec_rule_accession) != 1:
+                            raise MzIdParseException(
+                                f'Error when parsing SpecificityRules from SearchModification:\n'
+                                f'{json.dumps(mod)}')
+                        spec_rule_accessions.append(list(spec_rule_accession.keys())[0])
+
+                    accessions = cvquery(mod)
+                    # other modifications
+                    # name
+                    mod_name = None
+                    mod_accession = None
+                    # find the matching accession for the name cvParam.
+                    for i, acc in enumerate(accessions):
+                        # ToDo: be more strict with the allowed accessions?
+                        match = re.match('(?:MOD|UNIMOD|MS|XLMOD):[0-9]+', acc)
+                        if match:
+                            # not crosslink donor
+                            if match.group() != 'MS:1002509':
+                                mod_accession = acc
+                            # name
+                            # unknown modification
+                            if match.group() == 'MS:1001460':
+                                mod_name = "({0:.2f})".format(mod['massDelta'])
+                            # others
+                            elif match.group() != 'MS:1002509':
+                                # name is the key in mod dict corresponding to the matched accession.
+                                mod_name = accessions[acc]  # list(mod.keys())[i]
+
+                    crosslinker_id = cvquery(mod, "MS:1002509")
+                    if crosslinker_id is None:
+                        crosslinker_id = cvquery(mod, "MS:1002510")
+                        if crosslinker_id is not None:
+                            mod_name = 'crosslink acceptor'
+
+                    if mod_name is None or mod_accession is None:
                         raise MzIdParseException(
-                            f'Error when parsing SpecificityRules from SearchModification:\n'
-                            f'{json.dumps(mod)}')
-                    spec_rule_accessions.append(list(spec_rule_accession.keys())[0])
+                            f'Error parsing <SearchModification>s! '
+                            f'Could not parse name/accession of modification:\n{json.dumps(mod)}')
 
-                accessions = cvquery(mod)
-                # other modifications
-                # name
-                mod_name = None
-                mod_accession = None
-                # find the matching accession for the name cvParam.
-                for i, acc in enumerate(accessions):
-                    # ToDo: be more strict with the allowed accessions?
-                    match = re.match('(?:MOD|UNIMOD|MS|XLMOD):[0-9]+', acc)
-                    if match:
-                        # not crosslink donor
-                        if match.group() != 'MS:1002509':
-                            mod_accession = acc
-                        # name
-                        # unknown modification
-                        if match.group() == 'MS:1001460':
-                            mod_name = "({0:.2f})".format(mod['massDelta'])
-                        # others
-                        elif match.group() != 'MS:1002509':
-                            # name is the key in mod dict corresponding to the matched accession.
-                            mod_name = accessions[acc]  # list(mod.keys())[i]
+                    if crosslinker_id:  # it's a string but don't want to convert null to word 'None'
+                        crosslinker_id = str(crosslinker_id)
 
-                crosslinker_id = cvquery(mod, "MS:1002509")
-                if crosslinker_id is None:
-                    crosslinker_id = cvquery(mod, "MS:1002510")
-                    if crosslinker_id is not None:
-                        mod_name = 'crosslink acceptor'
+                    mass_delta = mod['massDelta']
+                    if mass_delta == float('inf') or mass_delta == float('-inf'):
+                        mass_delta = None
+                        self.warnings.add("SearchModification with massDelta of +/- infinity found.")
 
-                if mod_name is None or mod_accession is None:
-                    raise MzIdParseException(
-                        f'Error parsing <SearchModification>s! '
-                        f'Could not parse name/accession of modification:\n{json.dumps(mod)}')
-
-                if crosslinker_id:  # it's a string but don't want to convert null to word 'None'
-                    crosslinker_id = str(crosslinker_id)
-
-                mass_delta = mod['massDelta']
-                if mass_delta == float('inf') or mass_delta == float('-inf'):
-                    mass_delta = None
-                    self.warnings.add("SearchModification with massDelta of +/- infinity found.")
-
-                search_modifications.append({
-                    'id': mod_index,
-                    'upload_id': self.writer.upload_id,
-                    'protocol_id': sid_protocol['id'],
-                    'mod_name': mod_name,
-                    'mass': mass_delta,
-                    'residues': ''.join([r for r in mod['residues'] if r != ' ']),
-                    'specificity_rules': spec_rule_accessions,
-                    'fixed_mod': mod['fixedMod'],
-                    'accession': mod_accession,
-                    'crosslinker_id': crosslinker_id
-                })
-                mod_index += 1
+                    search_modifications.append({
+                        'id': mod_index,
+                        'upload_id': self.writer.upload_id,
+                        'protocol_id': sid_protocol['id'],
+                        'mod_name': mod_name,
+                        'mass': mass_delta,
+                        'residues': ''.join([r for r in mod['residues'] if r != ' ']),
+                        'specificity_rules': spec_rule_accessions,
+                        'fixed_mod': mod['fixedMod'],
+                        'accession': mod_accession,
+                        'crosslinker_id': crosslinker_id
+                    })
+                    mod_index += 1
 
             # Enzymes
-            for enzyme in sid_protocol['Enzymes']['Enzyme']:
+            if 'Enzymes' in sid_protocol:
+                for enzyme in sid_protocol['Enzymes']['Enzyme']:
 
-                enzyme_name = None
-                enzyme_accession = None
+                    enzyme_name = None
+                    enzyme_accession = None
 
-                # optional child element SiteRegexp
-                site_regexp = enzyme.get('SiteRegexp', None)
+                    # optional child element SiteRegexp
+                    site_regexp = enzyme.get('SiteRegexp', None)
 
-                # optional child element EnzymeName
-                try:
-                    enzyme_name_el = enzyme['EnzymeName']
-                    # get cvParams that are children of 'cleavage agent name' (MS:1001045)
-                    # there is a mandatory UserParam subelement of EnzymeName which we are ignoring
-                    enzyme_name = self.get_cv_params(enzyme_name_el, 'MS:1001045')
-                    if len(enzyme_name) > 1:
-                        raise MzIdParseException(
-                            f'Error when parsing EnzymeName from Enzyme:\n{json.dumps(enzyme)}')
-                    enzyme_name_cv = list(enzyme_name.keys())[0]
-                    enzyme_name = enzyme_name_cv
-                    enzyme_accession = enzyme_name_cv.accession
-                    # if the site_regexp was missing look it up using obo
-                    if site_regexp is None:
-                        for child, parent, key in self.ms_obo.out_edges(enzyme_accession,
-                                                                        keys=True):
-                            if key == 'has_regexp':
-                                site_regexp = self.ms_obo.nodes[parent]['name']
-                # fallback if no EnzymeName
-                except KeyError:
+                    # optional child element EnzymeName
                     try:
-                        # optional potentially ambiguous common name
-                        enzyme_name = enzyme['name']
+                        enzyme_name_el = enzyme['EnzymeName']
+                        # get cvParams that are children of 'cleavage agent name' (MS:1001045)
+                        # there is a mandatory UserParam subelement of EnzymeName which we are ignoring
+                        enzyme_name = self.get_cv_params(enzyme_name_el, 'MS:1001045')
+                        if len(enzyme_name) > 1:
+                            raise MzIdParseException(
+                                f'Error when parsing EnzymeName from Enzyme:\n{json.dumps(enzyme)}')
+                        enzyme_name_cv = list(enzyme_name.keys())[0]
+                        enzyme_name = enzyme_name_cv
+                        enzyme_accession = enzyme_name_cv.accession
+                        # if the site_regexp was missing look it up using obo
+                        if site_regexp is None:
+                            for child, parent, key in self.ms_obo.out_edges(enzyme_accession,
+                                                                            keys=True):
+                                if key == 'has_regexp':
+                                    site_regexp = self.ms_obo.nodes[parent]['name']
+                    # fallback if no EnzymeName
                     except KeyError:
-                        # no name attribute
-                        pass
+                        try:
+                            # optional potentially ambiguous common name
+                            enzyme_name = enzyme['name']
+                        except KeyError:
+                            # no name attribute
+                            pass
 
-                enzymes.append({
-                    'id': enzyme['id'],
-                    'upload_id': self.writer.upload_id,
-                    'protocol_id': sid_protocol['id'],
-                    'name': enzyme_name,
-                    'c_term_gain': enzyme.get('cTermGain', None),
-                    'n_term_gain': enzyme.get('nTermGain', None),
-                    'min_distance': enzyme.get('minDistance', None),
-                    'missed_cleavages': enzyme.get('missedCleavages', None),
-                    'semi_specific': enzyme.get('semiSpecific', None),
-                    'site_regexp': site_regexp,
-                    'accession': enzyme_accession
-                })
+                    enzymes.append({
+                        'id': enzyme['id'],
+                        'upload_id': self.writer.upload_id,
+                        'protocol_id': sid_protocol['id'],
+                        'name': enzyme_name,
+                        'c_term_gain': enzyme.get('cTermGain', None),
+                        'n_term_gain': enzyme.get('nTermGain', None),
+                        'min_distance': enzyme.get('minDistance', None),
+                        'missed_cleavages': enzyme.get('missedCleavages', None),
+                        'semi_specific': enzyme.get('semiSpecific', None),
+                        'site_regexp': site_regexp,
+                        'accession': enzyme_accession
+                    })
 
             sid_protocols.append(data)
 
@@ -362,8 +364,10 @@ class MzIdParser:
             round(time() - start_time, 2)))
 
         self.writer.write_data('spectrumidentificationprotocol', sid_protocols)
-        self.writer.write_data('searchmodification', search_modifications)
-        self.writer.write_data('enzyme', enzymes)
+        if search_modifications:
+            self.writer.write_data('searchmodification', search_modifications)
+        if enzymes:
+            self.writer.write_data('enzyme', enzymes)
         self.search_modifications = search_modifications
 
     def parse_analysis_collection(self):

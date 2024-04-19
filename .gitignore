@@ -30,6 +30,7 @@ credentials.py
 
 test.db
 database.ini
+config/database.ini
 kubernetes.yml
 Dockerfile
 xi_mzidentml_converter.egg-info

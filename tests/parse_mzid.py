@@ -1,5 +1,5 @@
 from parser import MzIdParser
-from parser.api_writer import Writer
+from parser.database_writer import DatabaseWriter
 from sqlalchemy import text
 from uuid import uuid4
 from .db_pytest_fixtures import *
@@ -9,7 +9,7 @@ def parse_mzid_into_postgresql(mzid_file, peaklist, tmpdir, logger, use_database
     # create temp user for user_id
     user_id = 1
     # create writer
-    writer = Writer(engine.url, user_id)
+    writer = DatabaseWriter(engine.url, user_id)
     engine.dispose()
 
     # parse the mzid file
@@ -20,7 +20,7 @@ def parse_mzid_into_postgresql(mzid_file, peaklist, tmpdir, logger, use_database
 
 def parse_mzid_into_sqlite_xispec(mzid_file, peaklist, tmpdir, logger, engine):
     # create writer
-    writer = Writer(engine.url)
+    writer = DatabaseWriter(engine.url)
     engine.dispose()
 
     # parse the mzid file

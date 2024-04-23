@@ -1,4 +1,4 @@
-from parser.api_writer import Writer, Table
+from sqlalchemy import Table
 import os
 import logging
 from .db_pytest_fixtures import *

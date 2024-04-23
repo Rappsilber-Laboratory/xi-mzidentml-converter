@@ -1,5 +1,5 @@
 import os
-from parser.api_writer import Table
+from sqlalchemy import Table
 import logging
 from parser.peaklistReader.PeakListWrapper import PeakListWrapper
 from .db_pytest_fixtures import *

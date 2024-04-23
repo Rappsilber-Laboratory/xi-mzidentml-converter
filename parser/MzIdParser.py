@@ -12,10 +12,10 @@ from time import time
 import obonet
 from pyteomics import mzid  # https://pyteomics.readthedocs.io/en/latest/data.html#controlled-vocabularies
 from pyteomics.auxiliary import cvquery
-from sqlalchemy import Table
+from pyteomics.xml import _local_name
+from lxml import etree
 from sqlalchemy.exc import SQLAlchemyError
 
-from parser import writer
 from parser.api_writer import APIWriter
 from parser.peaklistReader.PeakListWrapper import PeakListWrapper
 
@@ -73,7 +73,6 @@ class MzIdParser:
             raise MzIdParseException(type(e).__name__, e.args)
 
         self.logger.info('reading mzid - done. Time: {} sec'.format(round(time() - start_time, 2)))
-
 
     def parse(self):
         """Parse the file."""
@@ -585,8 +584,15 @@ class MzIdParser:
 
         # iterate over all the spectrum identification lists
         for sil_id in self.mzid_reader._offset_index["SpectrumIdentificationList"].keys():
-            sil = self.mzid_reader.get_by_id(sil_id, tag_id='SpectrumIdentificationList')
-            for sid_result in sil['SpectrumIdentificationResult']:
+            # sil = self.mzid_reader.get_by_id(sil_id, tag_id='SpectrumIdentificationList')
+            self.mzid_reader.reset()
+            for sid_result in iterfind_when(
+                    self.mzid_reader,
+                    "SpectrumIdentificationResult",
+                    "SpectrumIdentificationList",
+                    lambda x: x.attrib["id"] == sil_id,
+                    retrieve_refs=False
+            ):
                 if self.peak_list_dir:
                     peak_list_reader = self.peak_list_readers[sid_result['spectraData_ref']]
 
@@ -667,7 +673,7 @@ class MzIdParser:
                             'scores': scores,
                             'exp_mz': spec_id_item['experimentalMassToCharge'],
                             'calc_mz': calculated_mass_to_charge,
-                            'sil_id': sil['id'],
+                            'sil_id': sil_id,
                         }
 
                         spectrum_ident_dict[crosslink_id] = ident_data
@@ -695,9 +701,10 @@ class MzIdParser:
         db_wrap_up_start_time = time()
         self.logger.info('write remaining entries to DB - start')
 
-        if self.peak_list_dir:
+        if self.peak_list_dir and spectra:  # spectra is not empty
             self.writer.write_data('spectrum', spectra)
-        self.writer.write_data('spectrumidentification', spectrum_identifications)
+        if spectrum_identifications:  # spectrum_identifications is not empty
+            self.writer.write_data('spectrumidentification', spectrum_identifications)
 
         self.logger.info('write remaining entries to DB - done.  Time: {} sec'.format(
             round(time() - db_wrap_up_start_time, 2)))
@@ -745,7 +752,8 @@ class MzIdParser:
             bib_refs.append(bib)
         self.mzid_reader.reset()
 
-        self.writer.write_mzid_info(analysis_software_list, spectra_formats, provider, audits, samples, bib_refs, self.writer.upload_id)
+        self.writer.write_mzid_info(analysis_software_list, spectra_formats, provider, audits, samples, bib_refs,
+                                    self.writer.upload_id)
 
         self.logger.info('getting upload info - done  Time: {} sec'.format(
             round(time() - upload_info_start_time, 2)))
@@ -766,7 +774,7 @@ class MzIdParser:
 
             response = self.writer.write_new_upload(table, upload_data)
             if response:
-                self.writer.upload_id =int(response)
+                self.writer.upload_id = int(response)
             else:
                 raise Exception("Response is not available to create a upload ID")
         except SQLAlchemyError as e:
@@ -847,6 +855,49 @@ class MzIdParser:
         else:
             raise BaseException('unsupported file type: %s' % archive)
 
+def iterfind_when(source, target_name, condition_name, stack_predicate, **kwargs):
+    """
+    Iteratively parse XML stream in ``source``, yielding XML elements
+    matching ``target_name`` as long as earlier in the tree a ``condition_name`` element
+    satisfies ``stack_predicate``, a callable that takes a single :class:`etree.Element` and returns
+    a :class:`bool`.
+
+    Parameters
+    ----------
+    source: file-like
+        A file-like object over an XML document
+    target_name: str
+        The name of the XML tag to parse until
+    condition_name: str
+        The name to start parsing at when `stack_predicate` evaluates to true on this element.
+    stack_predicate: callable
+        A function called with a single `etree.Element` that determines if the sub-tree should be parsed
+    **kwargs:
+        Additional arguments passed to :meth:`source._get_info_smart`
+
+    Yields
+    ------
+    lxml.etree.Element
+    """
+    g = etree.iterparse(source, ("start", "end"))
+    state = False
+    history = []
+    for event, tag in g:
+        lc_name = _local_name(tag)
+        if event == "start":
+            if lc_name == condition_name:
+                state = stack_predicate(tag)
+        else:
+            if lc_name == target_name and state:
+                value = source._get_info_smart(tag, **kwargs)
+                for t in history:
+                    t.clear()
+                history.clear()
+                yield value
+            elif state:
+                history.append(tag)
+            elif not state:
+                tag.clear()
 
 class xiSPEC_MzIdParser(MzIdParser):
 

@@ -4,6 +4,7 @@ from sqlalchemy import create_engine
 from sqlalchemy_utils import database_exists, drop_database, create_database
 
 from models.base import Base
+from models import *
 
 
 def create_db(connection_str):

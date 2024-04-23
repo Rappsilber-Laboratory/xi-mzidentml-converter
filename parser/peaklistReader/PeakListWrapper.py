@@ -282,9 +282,8 @@ class MZMLReader(SpectraReader):
         :param file_name: (str) mzML filename
         :param source_path: (str) path to the source file (mzML or archive)
         """
-        self._reader = mzml.read(source)
-        if self._reader.index is None:
-            self._reader = mzml.read(source, use_index=True)
+
+        self._reader = mzml.read(source, use_index=True, huge_tree=True)
         super().load(source, file_name, source_path)
 
     def reset(self):

@@ -1,7 +1,6 @@
 import os
 
 from parser import SimpleFASTA
-from parser.api_writer import Table
 import logging
 from parser.peaklistReader.PeakListWrapper import PeakListWrapper
 from .db_pytest_fixtures import *

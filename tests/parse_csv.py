@@ -1,5 +1,5 @@
 from parser import FullCsvParser, NoPeakListsCsvParser, LinksOnlyCsvParser
-from parser.api_writer import Writer
+from parser.database_writer import DatabaseWriter
 from sqlalchemy import text
 from uuid import uuid4
 from .db_pytest_fixtures import *
@@ -9,7 +9,7 @@ def parse_full_csv_into_postgresql(mzid_file, peaklist, tmpdir, logger, use_data
     # create temp user for user_id
     user_id = 1
     # create writer
-    writer = Writer(engine.url, user_id)
+    writer = DatabaseWriter(engine.url, user_id)
     engine.dispose()
 
     # parse the mzid file
@@ -23,7 +23,7 @@ def parse_no_peak_lists_csv_into_postgresql(mzid_file, peaklist, tmpdir, logger,
     # create temp user for user_id
     user_id = 1
     # create writer
-    writer = Writer(engine.url, user_id)
+    writer = DatabaseWriter(engine.url, user_id)
     engine.dispose()
 
     # parse the mzid file
@@ -37,7 +37,7 @@ def parse_links_only_csv_into_postgresql(mzid_file, peaklist, tmpdir, logger, us
     # create temp user for user_id
     user_id = 1
     # create writer
-    writer = Writer(engine.url, user_id)
+    writer = DatabaseWriter(engine.url, user_id)
     engine.dispose()
 
     # parse the mzid file
@@ -49,7 +49,7 @@ def parse_links_only_csv_into_postgresql(mzid_file, peaklist, tmpdir, logger, us
 
 def parse_full_csv_into_sqllite(mzid_file, peaklist, tmpdir, logger, use_database, engine):
     # create writer
-    writer = Writer(engine.url)
+    writer = DatabaseWriter(engine.url)
     engine.dispose()
 
     # parse the mzid file
@@ -61,7 +61,7 @@ def parse_full_csv_into_sqllite(mzid_file, peaklist, tmpdir, logger, use_databas
 
 def parse_no_peak_lists_csv_into_sqllite(mzid_file, peaklist, tmpdir, logger, use_database, engine):
     # create writer
-    writer = Writer(engine.url)
+    writer = DatabaseWriter(engine.url)
     engine.dispose()
 
     # parse the mzid file
@@ -73,7 +73,7 @@ def parse_no_peak_lists_csv_into_sqllite(mzid_file, peaklist, tmpdir, logger, us
 
 def parse_links_only_csv_into_sqllite(mzid_file, peaklist, tmpdir, logger, use_database, engine):
     # create writer
-    writer = Writer(engine.url)
+    writer = DatabaseWriter(engine.url)
     engine.dispose()
 
     # parse the mzid file

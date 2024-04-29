@@ -342,7 +342,6 @@ class MS2Reader(SpectraReader):
                     spec_id = int(spec_id)
                 except ValueError:
                     raise PeakListParseError("invalid spectrum ID format!")
-            spec = self._reader[spec_id]
 
         # MS:1000775 single peak list nativeID format
         # The nativeID must be the same as the source file ID.
@@ -350,7 +349,6 @@ class MS2Reader(SpectraReader):
         # typically in a folder of PKL or DTAs, where each sourceFileRef is different.
         elif self.spectrum_id_format_accession == 'MS:1000775':
             spec_id = 0
-            spec = self._reader[spec_id]
 
         # ToDo: not supported for now.
         # # MS:1000768 Thermo nativeID format:
@@ -362,6 +360,11 @@ class MS2Reader(SpectraReader):
         else:
             raise SpectrumIdFormatError(
                     f"{self.spectrum_id_format_accession} not supported for MS2")
+
+        try:
+            spec = self._reader[spec_id]
+        except IndexError:
+            raise PeakListParseError(f"Spectrum with id {spec_id} not found!")
         return self._convert_spectrum(spec)
 
     def load(self, source, file_name=None, source_path=None):
@@ -372,21 +375,32 @@ class MS2Reader(SpectraReader):
         :param file_name: (str) MS2 filename
         :param source_path: (str) path to the source file (MS2 or archive)
         """
-        self._reader = ms2.read(source, use_index=True)
+        self._reader = MyMS2(source)
         super().load(source, file_name, source_path)
 
     def _convert_spectrum(self, spec):
         """
         Convert spectrum to Spectrum object.
         """
-        precursor = {
-            'mz': spec['params']['precursor m/z'],
-            'charge': spec['params']['charge'][0],
-            'intensity': spec['params']['PrecursorInt']
-        }
+        if 'PrecursorInt' in spec['params']:
+            precursor = {
+                'mz': spec['params']['precursor m/z'],
+                'charge': spec['params']['charge'][0],
+                'intensity': spec['params']['PrecursorInt']
+            }
+        else:
+            precursor = {
+                'mz': spec['params']['precursor m/z'],
+                'charge': spec['params']['charge'][0]
+            }
 
         # parse retention time, default to NaN
         rt = spec['params'].get('RetTime', np.nan)
         rt = float(rt) * 60
 
         return Spectrum(precursor, spec['m/z array'], spec['intensity array'], rt)
+
+
+class MyMS2(ms2.IndexedMS2):
+     label = r'S\s+(.*\S)'
+

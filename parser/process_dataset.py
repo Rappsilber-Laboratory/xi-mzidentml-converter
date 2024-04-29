@@ -244,8 +244,8 @@ def convert_dir(local_dir, project_identifier,writer_method, nopeaklist=False):
                 id_parser.parse()
                 # logger.info(id_parser.warnings + "\n")
             except Exception as e:
-                print("Error parsing " + file)
-                print(type(e).__name__, e)
+                logging.error("Error parsing " + file)
+                logging.exception(e)
                 raise e
             gc.collect()
         else:

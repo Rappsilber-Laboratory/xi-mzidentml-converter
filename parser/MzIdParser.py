@@ -9,7 +9,6 @@ import traceback
 import zipfile
 from time import time
 
-import networkx
 import obonet
 from pyteomics import mzid  # https://pyteomics.readthedocs.io/en/latest/data.html#controlled-vocabularies
 from pyteomics.auxiliary import cvquery

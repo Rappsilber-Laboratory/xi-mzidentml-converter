@@ -367,7 +367,6 @@ class MzIdParser:
             self.writer.write_data('searchmodification', search_modifications)
         if enzymes:
             self.writer.write_data('enzyme', enzymes)
-        self.search_modifications = search_modifications
 
     def parse_analysis_collection(self):
         """
@@ -639,15 +638,8 @@ class MzIdParser:
                         ident_data['pep2_id'] = spec_id_item['peptide_ref']
                     else:
                         # do stuff common to linears and crosslinks
-                        # ToDo: refactor with MS: cvParam list of all scores
-                        scores = {
-                            k: v for k, v in spec_id_item.items()
-                            if 'score' in k.lower() or
-                               'pvalue' in k.lower() or
-                               'evalue' in k.lower() or
-                               'sequest' in k.lower() or
-                               'scaffold' in k.lower()
-                        }
+
+                        psm_level_stats = self.get_cv_params(spec_id_item, 'MS:1001143') #  'MS:1002347') #
 
                         rank = spec_id_item['rank']
                         # from mzidentML schema 1.2.0: For PMF data, the rank attribute may be
@@ -670,7 +662,7 @@ class MzIdParser:
                             'charge_state': int(spec_id_item['chargeState']),
                             'pass_threshold': spec_id_item['passThreshold'],
                             'rank': int(rank),
-                            'scores': scores,
+                            'scores': psm_level_stats,
                             'exp_mz': spec_id_item['experimentalMassToCharge'],
                             'calc_mz': calculated_mass_to_charge,
                             'sil_id': sil_id,
@@ -784,6 +776,17 @@ class MzIdParser:
         """Write remaining information into Upload table."""
         self.writer.write_other_info(self.contains_crosslinks, list(self.warnings), self.writer.upload_id)
 
+    @staticmethod
+    def get_accessions(element):
+        """Get the cvParam accessions for the given element. BUT ALSO INCLUDE EMPTY STRING FOR NON CV PARAMS."""
+        accessions = []
+        for el in element.keys():
+            if hasattr(el, 'accession'):
+                accessions.append(el.accession)
+            else:
+                accessions.append('')
+        return accessions
+
     def get_cv_params(self, element, super_cls_accession=None):
         """
         Get the cvParams of an element.
@@ -792,10 +795,10 @@ class MzIdParser:
         :param super_cls_accession: (str) accession number of the superclass
         :return: filtered dictionary of cvParams
         """
-        accessions = cvquery(element)
+        accessions = self.get_accessions(element)
 
         if super_cls_accession is None:
-            filtered_idx = list(accessions.keys())
+            filtered_idx = [i for i, a in enumerate(accessions) if a != '']
         else:
             children = []
             if type(super_cls_accession) != list:
@@ -808,7 +811,18 @@ class MzIdParser:
                     children.append(child)
             filtered_idx = [i for i, a in enumerate(accessions) if a in children]
 
-        return {k: v for i, (k, v) in enumerate(element.items()) if i in filtered_idx}
+        result = {k: v for i, (k, v) in enumerate(element.items()) if i in filtered_idx}
+
+        # hacky fix for https://github.com/levitsky/pyteomics/issues/150
+        for k, v in result.items():
+            # check if v is list
+            if isinstance(v, list):
+                # if every value in list is the same
+                if all(x == v[0] for x in v):
+                    # set the value to the first element
+                    result[k] = v[0]
+
+        return result
 
     # ToDo: refactor gz/zip
     # split into two functions

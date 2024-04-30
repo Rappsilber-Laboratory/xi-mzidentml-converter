@@ -4,14 +4,12 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-fastapi = ">=0.68.0,<0.69.0"
-uvicorn = "<0.16.0,>=0.15.0"
 lxml = ">=4.9.1"
 numpy = ">=1.14.3"
 pandas = ">=0.21.0"
 pymzml = ">=0.7.8"
 pyteomics = "4.7.2"
-requests = ">=2.20.1"
+requests = ">=2.31.0"
 urllib3 = ">=1.24.2"
 pytest = "*"
 psycopg2-binary = "*"
@@ -19,8 +17,9 @@ sqlalchemy = "2.0.21"
 sqlalchemy-utils = "*"
 obonet = "*"
 #Security modules
-python-multipart = "*"
-python-jose = "*"
+certifi = ">=2023.7.22"
+python-multipart = ">=0.0.7"
+python-jose = ">=3.3.0"
 passlib = "*"
 jose = "*"
 

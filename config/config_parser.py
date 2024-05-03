@@ -1,8 +1,6 @@
 from configparser import ConfigParser
 import os
 
-config_File = "database.ini"
-
 def parse_config(filename, section='postgresql'):
     # create a parser
     parser = ConfigParser()
@@ -24,9 +22,7 @@ def get_conn_str():
     """
     Get database related configurations
     """
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    config = os.environ.get('DB_CONFIG', os.path.join(script_dir, config_File))
-    db_info = parse_config(config)
+    db_info = parse_config(find_config_file())
     hostname = os.environ.get('DB_HOST') or db_info.get("host")
     database = os.environ.get('DB_DATABASE_NAME') or db_info.get("database")
     username = os.environ.get('DB_USER') or db_info.get("user")
@@ -40,10 +36,18 @@ def get_api_configs():
     """
     Get API related configurations
     """
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    config = os.environ.get('DB_CONFIG', os.path.join(script_dir, config_File))
-    api_configs = parse_config(config, "api")
+    api_configs = parse_config(find_config_file(), "api")
     config= {"base_url": os.environ.get('BASE_URL') or api_configs.get("base_url"),
              "api_key": os.environ.get('API_KEY') or api_configs.get("api_key"),
              "api_key_value": os.environ.get('API_KEY_VALUE') or api_configs.get("api_key_value")}
+    return config
+
+
+def find_config_file():
+    """
+    Find config ini file
+    """
+    config_File = "database.ini"
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    config = os.environ.get('DB_CONFIG', os.path.join(script_dir, config_File))
     return config

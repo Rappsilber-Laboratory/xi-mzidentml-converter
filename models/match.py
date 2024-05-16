@@ -7,7 +7,8 @@ from typing import Optional, Any
 class Match(Base):
     __tablename__ = "match"
     id: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
-    upload_id: Mapped[int] = mapped_column(Integer, ForeignKey("upload.id"), index=True, primary_key=True, nullable=False)
+    upload_id: Mapped[int] = mapped_column(Integer, ForeignKey("upload.id"), index=True, primary_key=True,
+                                           nullable=False)
     spectrum_id: Mapped[str] = mapped_column(Text, nullable=True)
     spectra_data_ref: Mapped[str] = mapped_column(Text, nullable=True)
     multiple_spectra_identification_id: Mapped[str] = mapped_column(Integer, nullable=True)
@@ -19,7 +20,7 @@ class Match(Base):
     scores: Mapped[Optional[dict[str, Any]]] = mapped_column(JSON, nullable=True)
     exp_mz: Mapped[float] = mapped_column(FLOAT, nullable=True)
     calc_mz: Mapped[float] = mapped_column(FLOAT, nullable=True)
-    sil_id: Mapped[str] = mapped_column(Text, nullable=True) #  null if from csv file
+    sil_id: Mapped[str] = mapped_column(Text, nullable=True)  # null if from csv file
     ForeignKeyConstraint(
         ["sil_id", "upload_id"],
         ["analysiscollectionspectrumidentification.spectrum_identification_list_ref",

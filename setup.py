@@ -31,7 +31,7 @@ setup(
     license="'Apache 2.0",
     url="https://github.com/PRIDE-Archive/xi-mzidentml-converter",
     packages=find_packages(),
-    package_data={'config': ['logging.ini','database.ini']},
+    package_data={'config': ['logging.ini', 'database.ini']},
     install_requires=[
         'fastapi>=0.68.0,<0.69.0',
         'uvicorn<=0.16.0,>=0.15.0',

@@ -31,7 +31,7 @@ class Spectrum:
             102.234, 'charge': 2, 'intensity': 12654.35}
         :param mz_array: (ndarray, dtype: float64) m/z values of the spectrum peaks
         :param int_array: (ndarray, dtype: float64) intensity values of the spectrum peaks
-        :param rt: (str) Retention time in seconds (can be a range, e.g 60-62)
+        :param rt: (str) Retention time in seconds (can be a range, e.g. 60-62)
         """
         self.precursor = precursor
         self.rt = rt
@@ -203,7 +203,7 @@ class MGFReader(SpectraReader):
 
         else:
             raise SpectrumIdFormatError(
-                    f"{self.spectrum_id_format_accession} not supported for MGF")
+                f"{self.spectrum_id_format_accession} not supported for MGF")
 
         return self._convert_spectrum(spec)
 
@@ -270,7 +270,7 @@ class MZMLReader(SpectraReader):
 
         else:
             raise SpectrumIdFormatError(
-                    f"{self.spectrum_id_format_accession} not supported for mzML!")
+                f"{self.spectrum_id_format_accession} not supported for mzML!")
 
         return self._convert_spectrum(spec)
 
@@ -359,7 +359,7 @@ class MS2Reader(SpectraReader):
 
         else:
             raise SpectrumIdFormatError(
-                    f"{self.spectrum_id_format_accession} not supported for MS2")
+                f"{self.spectrum_id_format_accession} not supported for MS2")
 
         try:
             spec = self._reader[spec_id]
@@ -402,5 +402,4 @@ class MS2Reader(SpectraReader):
 
 
 class MyMS2(ms2.IndexedMS2):
-     label = r'S\s+(.*\S)'
-
+    label = r'S\s+(.*\S)'

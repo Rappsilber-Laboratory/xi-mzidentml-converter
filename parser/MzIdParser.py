@@ -646,7 +646,7 @@ class MzIdParser:
                     else:
                         # do stuff common to linears and crosslinks
 
-                        psm_level_stats = self.get_cv_params(spec_id_item, 'MS:1001143') #  'MS:1002347') #
+                        psm_level_stats = self.get_cv_params(spec_id_item, 'MS:1001143')  # 'MS:1002347')
 
                         rank = spec_id_item['rank']
                         # from mzidentML schema 1.2.0: For PMF data, the rank attribute may be
@@ -876,6 +876,7 @@ class MzIdParser:
         else:
             raise Exception('unsupported file type: %s' % archive)
 
+
 def iterfind_when(source, target_name, condition_name, stack_predicate, **kwargs):
     """
     Iteratively parse XML stream in ``source``, yielding XML elements
@@ -919,6 +920,7 @@ def iterfind_when(source, target_name, condition_name, stack_predicate, **kwargs
                 history.append(tag)
             elif not state:
                 tag.clear()
+
 
 class xiSPEC_MzIdParser(MzIdParser):
 

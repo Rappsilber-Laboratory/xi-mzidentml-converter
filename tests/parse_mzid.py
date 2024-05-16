@@ -1,8 +1,5 @@
 from parser import MzIdParser
 from parser.database_writer import DatabaseWriter
-from sqlalchemy import text
-from uuid import uuid4
-from .db_pytest_fixtures import *
 
 
 def parse_mzid_into_postgresql(mzid_file, peaklist, tmpdir, logger, use_database, engine):  # remove 'use_database'? -cc

@@ -2,13 +2,7 @@ import os
 
 from parser import SimpleFASTA
 import logging
-from parser.peaklistReader.PeakListWrapper import PeakListWrapper
 from .db_pytest_fixtures import *
-from shutil import copyfile
-import ntpath
-from .parse_csv import parse_full_csv_into_postgresql, parse_links_only_csv_into_postgresql, \
-    parse_no_peak_lists_csv_into_postgresql, parse_no_peak_lists_csv_into_sqllite, parse_links_only_csv_into_sqllite, \
-    parse_full_csv_into_sqllite
 
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s %(levelname)s %(name)s %(message)s')

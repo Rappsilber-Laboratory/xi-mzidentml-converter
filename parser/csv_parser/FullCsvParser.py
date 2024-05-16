@@ -390,7 +390,7 @@ class FullCsvParser(AbstractCsvParser):
                 # peptide evidence - 2
 
                 if pep2_id is None:
-                    raise BaseException('Fatal! peptide id error!')
+                    raise Exception('Fatal! peptide id error!')
 
                 for i in range(len(protein_list2)):
                     pep_evidence2 = {

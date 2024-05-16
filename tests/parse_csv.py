@@ -1,9 +1,5 @@
 from parser import FullCsvParser, NoPeakListsCsvParser, LinksOnlyCsvParser
 from parser.database_writer import DatabaseWriter
-from sqlalchemy import text
-from uuid import uuid4
-from .db_pytest_fixtures import *
-
 
 def parse_full_csv_into_postgresql(mzid_file, peaklist, tmpdir, logger, use_database, engine):
     # create temp user for user_id

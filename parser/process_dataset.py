@@ -134,7 +134,7 @@ def convert_pxd_accession_from_pride(px_accession, temp_dir, writer_method, dont
                     ftp_url = parent_folder
 
                     logger.info('PRIDE FTP path : ' + parent_folder)
-                    break;
+                    break
         convert_from_ftp(ftp_url, temp_dir, px_accession,writer_method, dont_delete)
         if not ftp_url:
             raise Exception('Error: Public File location not found in PRIDE API response')

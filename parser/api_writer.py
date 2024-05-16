@@ -20,9 +20,9 @@ class APIWriter(Writer):
     def write_data(self, table, data):
         response = None
         try:
-            API_ENDPOINT = self.base_url+ "/write_data"
-            API_KEY_VALUE =  self.api_key_value
-            API_KEY =  self.api_key
+            API_ENDPOINT = self.base_url + "/write_data"
+            API_KEY_VALUE = self.api_key_value
+            API_KEY = self.api_key
             headers = {'Content-Type': 'application/json', API_KEY: API_KEY_VALUE}
             payload = {
                 "table": table,
@@ -47,7 +47,6 @@ class APIWriter(Writer):
             return response.json()
         else:
             return None
-
 
     def write_new_upload(self, table, data):
         response = None
@@ -82,7 +81,7 @@ class APIWriter(Writer):
                         provider, audits, samples, bib, upload_id):
         response = None
         try:
-            API_ENDPOINT = self.base_url + "/write_mzid_info?upload_id="+str(upload_id)
+            API_ENDPOINT = self.base_url + "/write_mzid_info?upload_id=" + str(upload_id)
             API_KEY_VALUE = self.api_key_value
             API_KEY = self.api_key
             headers = {'Content-Type': 'application/json', API_KEY: API_KEY_VALUE}
@@ -117,12 +116,11 @@ class APIWriter(Writer):
         else:
             return None
 
-
     def write_other_info(self, contains_crosslinks, upload_warnings, upload_id):
         response = None
         try:
             #todo: use urljoin
-            API_ENDPOINT = self.base_url + "/write_other_info?upload_id="+str(upload_id)
+            API_ENDPOINT = self.base_url + "/write_other_info?upload_id=" + str(upload_id)
             API_KEY_VALUE = self.api_key_value
             API_KEY = self.api_key
             headers = {'Content-Type': 'application/json', API_KEY: API_KEY_VALUE}

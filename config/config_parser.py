@@ -49,7 +49,7 @@ def get_api_configs():
     script_dir = os.path.dirname(os.path.abspath(__file__))
     config = os.environ.get('DB_CONFIG', os.path.join(script_dir, "database.ini"))
     api_configs = parse_config(config, "api")
-    config= {"base_url": os.environ.get('BASE_URL') or api_configs.get("base_url"),
-             "api_key": os.environ.get('API_KEY') or api_configs.get("api_key"),
-             "api_key_value": os.environ.get('API_KEY_VALUE') or api_configs.get("api_key_value")}
+    config = {"base_url": os.environ.get('BASE_URL') or api_configs.get("base_url"),
+              "api_key": os.environ.get('API_KEY') or api_configs.get("api_key"),
+              "api_key_value": os.environ.get('API_KEY_VALUE') or api_configs.get("api_key_value")}
     return config

@@ -40,13 +40,13 @@ class DatabaseWriter:
             conn.close()
 
     def write_new_upload(self, table, data):
-            table = Table(table, self.meta, autoload_with=self.engine, quote=False)
-            with self.engine.connect() as conn:
-                statement = table.insert().values(data).returning(table.columns[0])  # RETURNING id AS upload_id
-                result = conn.execute(statement)
-                conn.commit()
-                conn.close()
-            return result.fetchall()[0][0]
+        table = Table(table, self.meta, autoload_with=self.engine, quote=False)
+        with self.engine.connect() as conn:
+            statement = table.insert().values(data).returning(table.columns[0])  # RETURNING id AS upload_id
+            result = conn.execute(statement)
+            conn.commit()
+            conn.close()
+        return result.fetchall()[0][0]
 
     def write_mzid_info(self, analysis_software_list, spectra_formats,
                         provider, audits, samples, bib, upload_id):

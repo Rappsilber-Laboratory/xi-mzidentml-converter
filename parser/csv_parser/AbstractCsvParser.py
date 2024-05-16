@@ -1,15 +1,13 @@
-import sys
-import numpy as np
-from time import time
-import pandas as pd
-import sqlalchemy
-
-from parser.peaklistReader.PeakListWrapper import PeakListWrapper
-import os
-# import pyteomics.fasta as py_fasta
-from parser import SimpleFASTA
 import abc
+import os
+from time import time
+
+import numpy as np
+import pandas as pd
 from sqlalchemy import Table
+
+from parser import SimpleFASTA
+from parser.peaklistReader.PeakListWrapper import PeakListWrapper
 
 
 class CsvParseException(Exception):
@@ -46,13 +44,12 @@ class AbstractCsvParser:
 
     def __init__(self, csv_path, temp_dir, peak_list_dir, writer, logger):
         """
-
         :param csv_path: path to csv file
-        :param temp_dir: absolute path to temp dir for unzipping/storing files
-        :param db: database python module to use (xiUI_pg or xiSPEC_sqlite)
-        :param logger: logger to use
+        :param temp_dir: path to temp dir
+        :param peak_list_dir: path to peak list dir
+        :param writer: writer object
+        :param logger: logger object
         """
-
         self.csv_path = csv_path
         self.peak_list_readers = {}  # peak list readers indexed by spectraData_ref
 
@@ -266,7 +263,7 @@ class AbstractCsvParser:
                 conn.commit()
                 conn.close()
             except Exception as e:
-                # its SQLite
+                # it's SQLite
                 upload_data['id'] = 1
                 statement = table.insert().values(upload_data)
                 result = conn.execute(statement)

@@ -284,7 +284,6 @@ def compare_analysis_collection_mgf(results):
     assert results[1].search_database_refs == ['SDB_0_0']
 
 
-
 def compare_analysis_collection_mzml(results):
     assert len(results) == 2
     assert results[

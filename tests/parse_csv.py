@@ -1,6 +1,7 @@
 from parser import FullCsvParser, NoPeakListsCsvParser, LinksOnlyCsvParser
 from parser.database_writer import DatabaseWriter
 
+
 def parse_full_csv_into_postgresql(mzid_file, peaklist, tmpdir, logger, use_database, engine):
     # create temp user for user_id
     user_id = 1
@@ -84,6 +85,6 @@ def parse_links_only_csv_into_sqllite(mzid_file, peaklist, tmpdir, logger, use_d
 #     engine.dispose()
 #
 #     # parse the mzid file
-#     id_parser = MzIdParser.xiSPEC_MzIdParser(mzid_file, str(tmpdir), peaklist, writer, logger)
+#     id_parser = MzIdParser.XiSpecMzIdParser(mzid_file, str(tmpdir), peaklist, writer, logger)
 #     id_parser.parse()
 #     return id_parser

@@ -135,7 +135,7 @@ def convert_pxd_accession_from_pride(px_accession, temp_dir, writer_method, dont
 
                     logger.info('PRIDE FTP path : ' + parent_folder)
                     break
-        convert_from_ftp(ftp_url, temp_dir, px_accession,writer_method, dont_delete)
+        convert_from_ftp(ftp_url, temp_dir, px_accession, writer_method, dont_delete)
         if not ftp_url:
             raise Exception('Error: Public File location not found in PRIDE API response')
     else:
@@ -225,7 +225,7 @@ def get_ftp_file_list(ftp_ip, ftp_dir):
     return filelist
 
 
-def convert_dir(local_dir, project_identifier,writer_method, nopeaklist=False):
+def convert_dir(local_dir, project_identifier, writer_method, nopeaklist=False):
     # logging.basicConfig(level=logging.DEBUG,
     #                     format='%(asctime)s %(levelname)s %(name)s %(message)s')
     # logger = logging.getLogger(__name__)
@@ -253,4 +253,4 @@ def convert_dir(local_dir, project_identifier,writer_method, nopeaklist=False):
 
 
 if __name__ == "__main__":
-   main()
+    main()

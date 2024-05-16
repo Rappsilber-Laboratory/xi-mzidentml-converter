@@ -11,6 +11,9 @@ from parser.peaklistReader.PeakListWrapper import PeakListWrapper
 
 
 class CsvParseException(Exception):
+    """
+    Exception raised for errors parsing the csv file.
+    """
     pass
 
 
@@ -135,7 +138,7 @@ class AbstractCsvParser:
         """
         return self.csv_reader.peaklistfilename.unique()
 
-    def get_sequenceDB_file_names(self):
+    def get_sequence_db_file_names(self):
         fasta_files = []
         for file in os.listdir(self.temp_dir):
             if file.endswith(".fasta") or file.endswith(".FASTA"):
@@ -232,7 +235,7 @@ class AbstractCsvParser:
     def parse_db_sequences(self):
         self.logger.info('reading fasta - start')
         self.start_time = time()
-        self.fasta = SimpleFASTA.get_db_sequence_dict(self.get_sequenceDB_file_names())
+        self.fasta = SimpleFASTA.get_db_sequence_dict(self.get_sequence_db_file_names())
         self.logger.info('reading fasta - done. Time: ' + str(round(time() - self.start_time, 2)) + " sec")
 
     def upload_info(self):

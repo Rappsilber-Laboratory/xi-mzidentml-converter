@@ -54,11 +54,13 @@ class DatabaseWriter:
         Update Upload row with mzid info.
 
         ToDo: have this explicitly or create update func?
+        :param analysis_software_list: (list) List of analysis software used.
         :param spectra_formats:
         :param provider:
         :param audits:
         :param samples:
         :param bib:
+        :param upload_id:
         :return:
         """
         upload = Table("upload", self.meta, autoload_with=self.engine, quote=False)
@@ -81,6 +83,7 @@ class DatabaseWriter:
         ToDo: have this explicitly or create update func?
         :param contains_crosslinks:
         :param upload_warnings:
+        :param upload_id:
         :return:
         """
         upload = Table("upload", self.meta, autoload_with=self.engine, quote=False)

@@ -6,6 +6,7 @@ from config.config_parser import get_api_configs
 from parser.writer import Writer
 
 
+# noinspection PyPep8Naming
 class APIWriter(Writer):
     """Class for writing results to a relational database."""
 
@@ -119,7 +120,7 @@ class APIWriter(Writer):
     def write_other_info(self, contains_crosslinks, upload_warnings, upload_id):
         response = None
         try:
-            #todo: use urljoin
+            # todo: use urljoin
             API_ENDPOINT = self.base_url + "/write_other_info?upload_id=" + str(upload_id)
             API_KEY_VALUE = self.api_key_value
             API_KEY = self.api_key

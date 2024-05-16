@@ -922,7 +922,7 @@ def iterfind_when(source, target_name, condition_name, stack_predicate, **kwargs
                 tag.clear()
 
 
-class xiSPEC_MzIdParser(MzIdParser):
+class XiSpecMzIdParser(MzIdParser):
 
     def write_new_upload(self):
         """Overrides base class function - not needed for xiSPEC."""

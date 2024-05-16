@@ -1,8 +1,7 @@
 from parser.csv_parser.FullCsvParser import FullCsvParser
-# from AbstractCsvParser import CsvParseException
 
 
-class xiSPEC_CsvParser(FullCsvParser):
+class XiSpecCsvParser(FullCsvParser):
     required_cols = [
         'scanid',
         'charge',
@@ -27,7 +26,7 @@ class xiSPEC_CsvParser(FullCsvParser):
         'protein2',
         'peppos1',
         'peppos2',
-        'expmz',    # ToDo: required in mzid - also make required col?
+        'expmz',  # ToDo: required in mzid - also make required col?
         'calcmz'
     ]
 
@@ -56,4 +55,3 @@ class xiSPEC_CsvParser(FullCsvParser):
 
     def parse_db_sequences(self):
         pass
-

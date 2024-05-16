@@ -143,7 +143,7 @@ def test_links_only_csv_parser_sqllite(tmpdir, db_info, use_database, engine):
 #     peak_list_folder = PeakListWrapper.unzip_peak_lists(peaklist_zip_file, out_path=tmpdir)
 #
 #     # parse the csv file
-#     id_parser = xiSPEC_CsvParser(csv, str(tmpdir), peak_list_folder, SQLite, logger,
+#     id_parser = XiSpecCsvParser(csv, str(tmpdir), peak_list_folder, SQLite, logger,
 #                                  db_name=test_database)
 #     id_parser.check_required_columns()
 #

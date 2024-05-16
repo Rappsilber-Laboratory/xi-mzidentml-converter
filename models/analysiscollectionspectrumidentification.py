@@ -1,0 +1,20 @@
+from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import ForeignKey, Text, ForeignKeyConstraint, Integer, Any, JSON
+from models.base import Base
+
+
+class AnalysisCollectionSpectrumIdentification(Base):
+    """
+    This is the inputspectra.
+    """
+    __tablename__ = "analysiscollectionspectrumidentification"
+    upload_id: Mapped[int] = mapped_column(Integer, ForeignKey("upload.id"), index=True, primary_key=True, nullable=False)
+    spectrum_identification_list_ref: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False) # deliberately using this as part of primary key not id
+    spectrum_identification_protocol_ref: Mapped[str] = mapped_column(Text, primary_key=False, nullable=False)
+    spectrum_identification_id: Mapped[str] = mapped_column(Text, primary_key=False, nullable=False)
+    spectra_data_refs: Mapped[dict[str, Any]] = mapped_column(JSON, primary_key=False, nullable=True)
+    search_database_refs: Mapped[dict[str, Any]] = mapped_column(JSON, primary_key=False, nullable=True)
+    ForeignKeyConstraint(
+        ["spectrum_identification_protocol_ref", "upload_id"],
+        ["spectrumidentificationprotocol.id", "spectrumidentificationprotocol.upload_id"],
+    )

@@ -21,9 +21,9 @@ class SpectrumIdentification(Base):
     calc_mz: Mapped[float] = mapped_column(FLOAT, nullable=True)
     sil_id: Mapped[str] = mapped_column(Text, nullable=True) #  null if from csv file
     ForeignKeyConstraint(
-        ["spectra_data_ref", "upload_id"],
-        ["analysiscollection.spectra_data_ref",
-         "analysiscollection.upload_id"],
+        ["sil_id", "upload_id"],
+        ["analysiscollectionspectrumidentification.spectrum_identification_list_ref",
+         "analysiscollectionspectrumidentification.upload_id"],
     ),
     # Can't use this ForeignKeyConstraint, because we want to allow people to upload data
     # without spectra

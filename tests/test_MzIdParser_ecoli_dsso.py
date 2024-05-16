@@ -274,11 +274,15 @@ def compare_analysis_collection_mgf(results):
     assert results[
                0].spectrum_identification_list_ref == 'SII_LIST_1_1_0_recal_B190717_20_HF_LS_IN_130_ECLP_DSSO_01_SCX23_hSAX01_rep2.mgf'
     assert results[0].spectrum_identification_protocol_ref == 'SearchProtocol_1_0'
-    assert results[0].spectra_data_ref == 'SD_0_recal_B190717_20_HF_LS_IN_130_ECLP_DSSO_01_SCX23_hSAX01_rep2.mgf'
+    assert results[0].spectra_data_refs == ['SD_0_recal_B190717_20_HF_LS_IN_130_ECLP_DSSO_01_SCX23_hSAX01_rep2.mgf']
+    assert results[0].search_database_refs == ['SDB_0_0']
+
     assert results[
                1].spectrum_identification_list_ref == 'SII_LIST_1_1_0_recal_B190717_13_HF_LS_IN_130_ECLP_DSSO_01_SCX23_hSAX05_rep2.mgf'
     assert results[1].spectrum_identification_protocol_ref == 'SearchProtocol_1_0'
-    assert results[1].spectra_data_ref == 'SD_0_recal_B190717_13_HF_LS_IN_130_ECLP_DSSO_01_SCX23_hSAX05_rep2.mgf'
+    assert results[1].spectra_data_refs == ['SD_0_recal_B190717_13_HF_LS_IN_130_ECLP_DSSO_01_SCX23_hSAX05_rep2.mgf']
+    assert results[1].search_database_refs == ['SDB_0_0']
+
 
 
 def compare_analysis_collection_mzml(results):
@@ -286,11 +290,13 @@ def compare_analysis_collection_mzml(results):
     assert results[
                0].spectrum_identification_list_ref == 'SII_LIST_1_1_0_recal_B190717_20_HF_LS_IN_130_ECLP_DSSO_01_SCX23_hSAX01_rep2.mzML'
     assert results[0].spectrum_identification_protocol_ref == 'SearchProtocol_1_0'
-    assert results[0].spectra_data_ref == 'SD_0_recal_B190717_20_HF_LS_IN_130_ECLP_DSSO_01_SCX23_hSAX01_rep2.mzML'
+    assert results[0].spectra_data_refs == ['SD_0_recal_B190717_20_HF_LS_IN_130_ECLP_DSSO_01_SCX23_hSAX01_rep2.mzML']
+    assert results[0].search_database_refs == ['SDB_0_0']
     assert results[
                1].spectrum_identification_list_ref == 'SII_LIST_1_1_0_recal_B190717_13_HF_LS_IN_130_ECLP_DSSO_01_SCX23_hSAX05_rep2.mzML'
     assert results[1].spectrum_identification_protocol_ref == 'SearchProtocol_1_0'
-    assert results[1].spectra_data_ref == 'SD_0_recal_B190717_13_HF_LS_IN_130_ECLP_DSSO_01_SCX23_hSAX05_rep2.mzML'
+    assert results[1].spectra_data_refs == ['SD_0_recal_B190717_13_HF_LS_IN_130_ECLP_DSSO_01_SCX23_hSAX05_rep2.mzML']
+    assert results[1].search_database_refs == ['SDB_0_0']
 
 
 def compare_spectrum_mgf(conn, peak_list_folder):
@@ -408,7 +414,7 @@ def test_psql_mgf_mzid_parser(tmpdir, use_database, engine):
         compare_spectrum_identification_protocol(rs.fetchall())
 
         # AnalysisCollection
-        stmt = Table("analysiscollection", id_parser.writer.meta,
+        stmt = Table("analysiscollectionspectrumidentification", id_parser.writer.meta,
                      autoload_with=id_parser.writer.engine, quote=False).select()
         rs = conn.execute(stmt)
         compare_analysis_collection_mgf(rs.fetchall())
@@ -546,7 +552,7 @@ def test_psql_mzml_mzid_parser(tmpdir, use_database, engine):
         compare_spectrum_identification_protocol(rs.fetchall())
 
         # AnalysisCollection
-        stmt = Table("analysiscollection", id_parser.writer.meta,
+        stmt = Table("analysiscollectionspectrumidentification", id_parser.writer.meta,
                      autoload_with=id_parser.writer.engine, quote=False).select()
         rs = conn.execute(stmt)
         compare_analysis_collection_mzml(rs.fetchall())
@@ -647,7 +653,7 @@ def test_sqlite_mgf_xispec_mzid_parser(tmpdir):
         compare_spectrum_identification_protocol(rs.fetchall())
 
         # AnalysisCollection
-        stmt = Table("AnalysisCollection", id_parser.writer.meta,
+        stmt = Table("analysiscollectionspectrumidentification", id_parser.writer.meta,
                      autoload_with=id_parser.writer.engine, quote=False).select()
         rs = conn.execute(stmt)
         compare_analysis_collection_mgf(rs.fetchall())
@@ -723,7 +729,7 @@ def test_sqlite_mzml_xispec_mzid_parser(tmpdir):
         compare_spectrum_identification_protocol(rs.fetchall())
 
         # AnalysisCollection
-        stmt = Table("AnalysisCollection", id_parser.writer.meta,
+        stmt = Table("analysiscollectionspectrumidentification", id_parser.writer.meta,
                      autoload_with=id_parser.writer.engine, quote=False).select()
         rs = conn.execute(stmt)
         compare_analysis_collection_mzml(rs.fetchall())

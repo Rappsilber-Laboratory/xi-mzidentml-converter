@@ -377,20 +377,27 @@ class MzIdParser:
         spectrum_identification = []
         for si_key in self.mzid_reader._offset_index['SpectrumIdentification'].keys():
             si = self.mzid_reader.get_by_id(si_key, detailed=True)
+            spectra_data_refs = []
             for input_spectra in si['InputSpectra']:
-                si_data = {
-                    'upload_id': self.writer.upload_id,
-                    'spectrum_identification_protocol_ref': si['spectrumIdentificationProtocol_ref'],
-                    'spectrum_identification_list_ref': si['spectrumIdentificationList_ref'],
-                    'spectra_data_ref': input_spectra['spectraData_ref'],
-                }
-                spectrum_identification.append(si_data)
+                spectra_data_refs.append(input_spectra['spectraData_ref'])
+            search_database_refs = []
+            for search_database_ref in si['SearchDatabaseRef']:
+                search_database_refs.append(search_database_ref['searchDatabase_ref'])
+            si_data = {
+                'upload_id': self.writer.upload_id,
+                'spectrum_identification_protocol_ref': si['spectrumIdentificationProtocol_ref'],
+                'spectrum_identification_list_ref': si['spectrumIdentificationList_ref'],
+                'spectrum_identification_id': si_key,
+                'spectra_data_refs': spectra_data_refs,
+                'search_database_refs': search_database_refs
+            }
+            spectrum_identification.append(si_data)
 
         self.mzid_reader.reset()
         self.logger.info('parsing AnalysisCollection - done. Time: {} sec'.format(
             round(time() - start_time, 2)))
 
-        self.writer.write_data('analysiscollection', spectrum_identification)
+        self.writer.write_data('analysiscollectionspectrumidentification', spectrum_identification)
 
     def parse_db_sequences(self):
         """Parse and write the DBSequences."""
@@ -848,7 +855,7 @@ class MzIdParser:
 
             # todo - looks like potential problem here
             if len(return_file_list) > 1:
-                raise BaseException("more than one mzid file found!")
+                raise Exception("more than one mzid file found!")
 
             return return_file_list[0]
 
@@ -859,7 +866,7 @@ class MzIdParser:
             try:
                 out_f.write(in_f.read())
             except IOError:
-                raise BaseException('Zip archive error: %s' % archive)
+                raise Exception('Zip archive error: %s' % archive)
 
             in_f.close()
             out_f.close()
@@ -867,7 +874,7 @@ class MzIdParser:
             return archive
 
         else:
-            raise BaseException('unsupported file type: %s' % archive)
+            raise Exception('unsupported file type: %s' % archive)
 
 def iterfind_when(source, target_name, condition_name, stack_predicate, **kwargs):
     """
@@ -893,7 +900,7 @@ def iterfind_when(source, target_name, condition_name, stack_predicate, **kwargs
     ------
     lxml.etree.Element
     """
-    g = etree.iterparse(source, ("start", "end"))
+    g = etree.iterparse(source, ("start", "end"), remove_comments=True)
     state = False
     history = []
     for event, tag in g:

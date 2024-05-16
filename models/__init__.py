@@ -4,7 +4,7 @@ Import all the models here
 
 # Please keep __all__ alphabetized.
 __all__ = [
-    "analysiscollection",
+    "analysiscollectionspectrumidentification",
     "base",
     "dbsequence",
     "enzyme",

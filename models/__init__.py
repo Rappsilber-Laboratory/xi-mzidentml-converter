@@ -14,7 +14,7 @@ __all__ = [
     "projectsubdetail",
     "searchmodification",
     "spectrum",
-    "spectrumidentification",
+    "match",
     "spectrumidentificationprotocol",
     "upload"
 ]

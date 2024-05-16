@@ -686,7 +686,7 @@ class MzIdParser:
                         if self.peak_list_dir:
                             self.writer.write_data('spectrum', spectra)
                         spectra = []
-                        self.writer.write_data('spectrumidentification', spectrum_identifications)
+                        self.writer.write_data('match', spectrum_identifications)
                         spectrum_identifications = []
                     except Exception as e:
                         print(f"Caught an exception while writing data: {e}")
@@ -703,7 +703,7 @@ class MzIdParser:
         if self.peak_list_dir and spectra:  # spectra is not empty
             self.writer.write_data('spectrum', spectra)
         if spectrum_identifications:  # spectrum_identifications is not empty
-            self.writer.write_data('spectrumidentification', spectrum_identifications)
+            self.writer.write_data('match', spectrum_identifications)
 
         self.logger.info('write remaining entries to DB - done.  Time: {} sec'.format(
             round(time() - db_wrap_up_start_time, 2)))

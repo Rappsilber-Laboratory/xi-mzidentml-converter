@@ -302,7 +302,7 @@ class LinksOnlyCsvParser(AbstractCsvParser):
             self.writer.write_data("dbsequence", db_sequences)
             self.writer.write_data("modifiedpeptide", peptides)
             self.writer.write_data("peptideevidence", peptide_evidences)
-            self.writer.write_data("spectrumidentification", spectrum_identifications)
+            self.writer.write_data("match", spectrum_identifications)
         except Exception as e:
             raise e
 

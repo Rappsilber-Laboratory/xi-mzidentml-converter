@@ -380,8 +380,8 @@ def test_psql_mgf_mzid_parser(tmpdir, use_database, engine):
         # Spectrum
         compare_spectrum_mgf(conn, peak_list_folder)
 
-        # SpectrumIdentification
-        stmt = Table("spectrumidentification", id_parser.writer.meta,
+        # Match
+        stmt = Table("match", id_parser.writer.meta,
                      autoload_with=id_parser.writer.engine, quote=False).select()
         rs = conn.execute(stmt)
         assert 22 == rs.rowcount
@@ -517,8 +517,8 @@ def test_psql_mzml_mzid_parser(tmpdir, use_database, engine):
         # assert results[0].mz == []  # ToDo
         # assert results[0].intensity == []  # ToDo
 
-        # SpectrumIdentification
-        stmt = Table("spectrumidentification", id_parser.writer.meta,
+        # Match
+        stmt = Table("match", id_parser.writer.meta,
                      autoload_with=id_parser.writer.engine, quote=False).select()
         rs = conn.execute(stmt)
         assert 22 == rs.rowcount
@@ -640,8 +640,8 @@ def test_sqlite_mgf_xispec_mzid_parser(tmpdir):
         # Spectrum
         compare_spectrum_mgf(conn, peak_list_folder)
 
-        # SpectrumIdentification
-        stmt = Table("SpectrumIdentification", id_parser.writer.meta,
+        # Match
+        stmt = Table("Match", id_parser.writer.meta,
                      autoload_with=id_parser.writer.engine, quote=False).select()
         rs = conn.execute(stmt)
         # ToDo
@@ -716,8 +716,8 @@ def test_sqlite_mzml_xispec_mzid_parser(tmpdir):
         rs = conn.execute(stmt)
         # ToDo: create and use compare_spectrum_mzml()
 
-        # SpectrumIdentification
-        stmt = Table("SpectrumIdentification", id_parser.writer.meta,
+        # Match
+        stmt = Table("Match", id_parser.writer.meta,
                      autoload_with=id_parser.writer.engine, quote=False).select()
         rs = conn.execute(stmt)
         # ToDo

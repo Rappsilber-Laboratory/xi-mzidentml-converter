@@ -210,8 +210,8 @@ def test_links_only_csv_parser_sqllite(tmpdir, db_info, use_database, engine):
 #         # Spectrum
 #         compare_spectrum_mgf(conn, peak_list_folder)
 #
-#         # SpectrumIdentification
-#         stmt = Table("SpectrumIdentification", id_parser.writer.meta,
+#         # Match
+#         stmt = Table("Match", id_parser.writer.meta,
 #                      autoload_with=id_parser.writer.engine, quote=False).select()
 #         rs = conn.execute(stmt)
 #         assert 22 == rs.rowcount

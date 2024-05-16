@@ -78,8 +78,8 @@ def test_psql_matrixscience_mzid_parser(tmpdir, db_info, use_database, engine):
                                            engine)
 
     with engine.connect() as conn:
-        # SpectrumIdentification
-        stmt = Table("spectrumidentification", id_parser.writer.meta, autoload_with=id_parser.writer.engine,
+        # Match
+        stmt = Table("match", id_parser.writer.meta, autoload_with=id_parser.writer.engine,
                      quote=False).select()
         rs = conn.execute(stmt)
         compare_spectrum_identification(rs.fetchall())

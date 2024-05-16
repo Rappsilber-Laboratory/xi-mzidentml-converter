@@ -4,8 +4,8 @@ from models.base import Base
 from typing import Optional, Any
 
 
-class SpectrumIdentification(Base):
-    __tablename__ = "spectrumidentification"
+class Match(Base):
+    __tablename__ = "match"
     id: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
     upload_id: Mapped[int] = mapped_column(Integer, ForeignKey("upload.id"), index=True, primary_key=True, nullable=False)
     spectrum_id: Mapped[str] = mapped_column(Text, nullable=True)

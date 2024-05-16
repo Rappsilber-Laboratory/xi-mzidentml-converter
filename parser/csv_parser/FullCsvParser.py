@@ -501,7 +501,7 @@ class FullCsvParser(AbstractCsvParser):
             self.writer.write_data("peptideevidence", peptide_evidences)
             if self.peak_list_dir:
                 self.writer.write_data("spectrum", spectra)
-            self.writer.write_data("spectrumidentification", spectrum_identifications)
+            self.writer.write_data("match", spectrum_identifications)
         except Exception as e:
             raise e
 

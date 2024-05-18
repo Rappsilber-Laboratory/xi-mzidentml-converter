@@ -133,6 +133,7 @@ class MzIdParser:
             peak_list_file_name = ntpath.basename(sp_datum['location'])
             peak_list_file_path = self.peak_list_dir + peak_list_file_name
 
+            # noinspection PyBroadException
             try:
                 peak_list_reader = PeakListWrapper(
                     peak_list_file_path,
@@ -708,14 +709,16 @@ class MzIdParser:
         self.logger.info('write remaining entries to DB - done.  Time: {} sec'.format(
             round(time() - db_wrap_up_start_time, 2)))
 
+    # noinspection PyBroadException
     def upload_info(self):
         upload_info_start_time = time()
         self.logger.info('parse upload info - start')
         self.mzid_reader.reset()
         # Analysis Software List - optional element
+        # noinspection PyBroadException
         try:
             analysis_software_list = self.mzid_reader.iterfind('AnalysisSoftwareList').next()
-        except Exception as e:
+        except Exception:
             analysis_software_list = {}
 
         spectra_formats = []
@@ -727,21 +730,21 @@ class MzIdParser:
         # Provider - optional element
         try:
             provider = self.mzid_reader.iterfind('Provider').next()
-        except Exception as e:
+        except Exception:
             provider = {}
         self.mzid_reader.reset()
 
         # AuditCollection - optional element
         try:
             audits = self.mzid_reader.iterfind('AuditCollection').next()
-        except Exception as e:
+        except Exception:
             audits = {}
         self.mzid_reader.reset()
 
         # AnalysisSampleCollection - optional element
         try:
             samples = self.mzid_reader.iterfind('AnalysisSampleCollection').next()['Sample']
-        except Exception as e:
+        except Exception:
             samples = {}
         self.mzid_reader.reset()
 

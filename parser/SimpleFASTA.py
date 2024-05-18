@@ -38,7 +38,7 @@ def get_db_sequence_dict(fasta_file_list):
 
 
 def add_entry(identifier, sequence, description, seq_dict):
-    m = re.search("..\|(.*)\|(.*)\s?", identifier)
+    m = re.search(r'..\|(.*)\|(.*)\s?', identifier)
     # id = identifier
     accession = identifier
     name = identifier

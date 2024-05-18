@@ -21,7 +21,7 @@ class MissingFileException(Exception):
     pass
 
 
-class AbstractCsvParser:
+class AbstractCsvParser(abc.ABC):
     """
 
     """
@@ -259,17 +259,18 @@ class AbstractCsvParser:
         # self.writer.write_data('Upload', upload_data)
         table = Table('upload', self.writer.meta, autoload_with=self.writer.engine, quote=False)
         with self.writer.engine.connect() as conn:
+            # noinspection PyBroadException
             try:
                 statement = table.insert().values(upload_data).returning(table.columns[0])  # RETURNING id AS upload_id
                 result = conn.execute(statement)
                 self.writer.upload_id = result.fetchall()[0][0]
                 conn.commit()
                 conn.close()
-            except Exception as e:
+            except Exception:
                 # it's SQLite
                 upload_data['id'] = 1
                 statement = table.insert().values(upload_data)
-                result = conn.execute(statement)
+                conn.execute(statement)
                 self.writer.upload_id = upload_data['id']
                 conn.commit()
                 conn.close()

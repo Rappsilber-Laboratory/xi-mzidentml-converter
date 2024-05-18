@@ -85,7 +85,7 @@ class FullCsvParser(AbstractCsvParser):
             # delta of zero. It is RECOMMENDED that the 'donor' peptide SHOULD be the longer peptide, followed by
             # alphabetical order for equal length peptides.
 
-            invalid_char_pattern_pepseq = '([^GALMFWKQESPVICYHRNDTXa-z:0-9(.)\-]+)'
+            invalid_char_pattern_pepseq = r'([^GALMFWKQESPVICYHRNDTXa-z:0-9(.)\-]+)'
             # pepSeq - 1
             if id_item['pepseq1'] == '':
                 raise CsvParseException('Missing PepSeq1 for row: %s' % row_number)
@@ -466,7 +466,7 @@ class FullCsvParser(AbstractCsvParser):
                     'sequence': self.fasta[prot_id][3],
                 }
             except KeyError:
-                sp_regex = re.compile('(.*)\|(.*)\|(.*)')
+                sp_regex = re.compile(r'(.*)\|(.*)\|(.*)')
                 matches = sp_regex.search(prot_id)
                 if matches is not None:
                     db_seq = {

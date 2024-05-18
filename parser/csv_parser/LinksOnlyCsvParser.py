@@ -186,7 +186,7 @@ class LinksOnlyCsvParser(AbstractCsvParser):
                 else:
                     pep2_id = None
 
-                m = re.search("..\|(.*)\|(.*)\s?", protein_list1[i])
+                m = re.search(r'..\|(.*)\|(.*)\s?', protein_list1[i])
                 accession = protein_list1[i]
                 if m:
                     accession = m.groups()[0]
@@ -208,7 +208,7 @@ class LinksOnlyCsvParser(AbstractCsvParser):
 
                 for i in range(len(protein_list2)):
 
-                    m = re.search("..\|(.*)\|(.*)\s?", protein_list2[i])
+                    m = re.search(r'..\|(.*)\|(.*)\s?', protein_list2[i])
                     accession = protein_list2[i]
                     if m:
                         accession = m.groups()[0]
@@ -254,7 +254,7 @@ class LinksOnlyCsvParser(AbstractCsvParser):
                     'sequence': self.fasta[prot_id][3],
                 }
             except KeyError:
-                sp_regex = re.compile('(.*)\|(.*)\|(.*)')
+                sp_regex = re.compile(r'(.*)\|(.*)\|(.*)')
                 matches = sp_regex.search(prot_id)
                 if matches is not None:
                     db_seq = {

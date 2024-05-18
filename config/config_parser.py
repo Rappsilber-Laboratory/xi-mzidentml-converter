@@ -1,6 +1,7 @@
 from configparser import ConfigParser
 import os
 
+
 def parse_config(filename, section='postgresql'):
     # create a parser
     parser = ConfigParser()
@@ -37,7 +38,7 @@ def get_api_configs():
     Get API related configurations
     """
     api_configs = parse_config(find_config_file(), "api")
-    config= {"base_url": os.environ.get('BASE_URL') or api_configs.get("base_url"),
+    config = {"base_url": os.environ.get('BASE_URL') or api_configs.get("base_url"),
              "api_key": os.environ.get('API_KEY') or api_configs.get("api_key"),
              "api_key_value": os.environ.get('API_KEY_VALUE') or api_configs.get("api_key_value")}
     return config
@@ -47,7 +48,7 @@ def find_config_file():
     """
     Find config ini file
     """
-    config_File = "database.ini"
+    config_file = "database.ini"
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    config = os.environ.get('DB_CONFIG', os.path.join(script_dir, config_File))
+    config = os.environ.get('DB_CONFIG', os.path.join(script_dir, config_file))
     return config

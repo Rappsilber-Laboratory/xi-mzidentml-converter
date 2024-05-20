@@ -10,9 +10,8 @@ from parser.Writer import Writer
 class APIWriter(Writer):
     """Class for writing results to a relational database."""
 
-    def __init__(self, connection_str, user_id=None, upload_id=None, pxid=None):
-        self.pxid = pxid
-        self.upload_id = upload_id
+    def __init__(self, upload_id=None, pxid=None):
+        super().__init__(upload_id, pxid)
         configs = get_api_configs()
         self.base_url = configs['base_url']
         self.api_key = configs['api_key']

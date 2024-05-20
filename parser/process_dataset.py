@@ -41,7 +41,7 @@ def main():
     parser.add_argument('-n', '--nopeaklist',
                         help='No peak list files available, only works in comination with --dir arg',
                         action='store_true')
-    parser.add_argument('-w', '--writer', help='Save data to database(-w db) or API(-w api)')
+    parser.add_argument('-w', '--writer', help='Save data to database(-w db) or API(-w api), required.', required=True)
     args = parser.parse_args()
     try:
         logger.info("process_dataset.py is running!")
@@ -51,10 +51,9 @@ def main():
         else:
             temp_dir = os.path.expanduser('~/mzId_convertor_temp')
 
-        if args.writer:
-            writer_method = args.writer
-            if not (writer_method.lower() == 'api' or writer_method.lower() == 'db'):
-                raise ValueError('Writer method not supported! please use "api" or "database"')
+        writer_method = args.writer
+        if not (writer_method.lower() == 'api' or writer_method.lower() == 'db'):
+            raise ValueError('Writer method not supported! please use "api" or "db"')
 
         if args.pxid:
             px_accessions = args.pxid
@@ -236,7 +235,7 @@ def convert_dir(local_dir, project_identifier, writer_method, nopeaklist=False):
             logger.info("Processing " + file)
             conn_str = get_conn_str()
             if writer_method.lower() == 'api':
-                writer = APIWriter(conn_str, pxid=project_identifier)
+                writer = APIWriter(pxid=project_identifier)
             elif writer_method.lower() == 'db':
                 writer = DatabaseWriter(conn_str, pxid=project_identifier)
             id_parser = MzIdParser(os.path.join(local_dir, file), local_dir, peaklist_dir, writer, logger)

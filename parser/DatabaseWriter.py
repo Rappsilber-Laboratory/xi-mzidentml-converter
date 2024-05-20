@@ -1,14 +1,16 @@
 from sqlalchemy import create_engine, MetaData
 from sqlalchemy import Table
+
+from parser.Writer import Writer
 from parser.database.create_db_schema import create_schema
 from sqlalchemy_utils import database_exists
 
 
 # todo - ask about why this isn't sub class of writer, also file naming converntion
-class DatabaseWriter:
+class DatabaseWriter(Writer):
     """Class for writing results to a relational database."""
 
-    def __init__(self, connection_str, user_id=None, upload_id=None, pxid=None):
+    def __init__(self, connection_str, upload_id=None, pxid=None):
         """
         Initialises the database connection and the writer in general.
 
@@ -18,6 +20,7 @@ class DatabaseWriter:
         # Connection setup.
         # The 'engine' in SQLAlchemy is a Factory and connection pool to the database.
         # It has lazy initialisation.
+        super().__init__(upload_id, pxid)
         self.engine = create_engine(connection_str)
         self.meta = MetaData()
         self.pxid = pxid

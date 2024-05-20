@@ -1,5 +1,5 @@
 from parser import MzIdParser
-from parser.database_writer import DatabaseWriter
+from parser.DatabaseWriter import DatabaseWriter
 
 
 def parse_mzid_into_postgresql(mzid_file, peaklist, tmpdir, logger, use_database, engine):  # remove 'use_database'? -cc

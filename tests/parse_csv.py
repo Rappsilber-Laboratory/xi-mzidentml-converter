@@ -1,5 +1,5 @@
 from parser import FullCsvParser, NoPeakListsCsvParser, LinksOnlyCsvParser
-from parser.database_writer import DatabaseWriter
+from parser.DatabaseWriter import DatabaseWriter
 
 
 def parse_full_csv_into_postgresql(mzid_file, peaklist, tmpdir, logger, use_database, engine):

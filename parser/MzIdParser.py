@@ -17,7 +17,7 @@ from pyteomics.xml import _local_name
 from lxml import etree
 from sqlalchemy.exc import SQLAlchemyError
 
-from parser.api_writer import APIWriter
+from parser.APIWriter import APIWriter
 from parser.peaklistReader.PeakListWrapper import PeakListWrapper
 
 

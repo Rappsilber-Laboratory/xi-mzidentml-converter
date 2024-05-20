@@ -14,9 +14,9 @@ from urllib.parse import urlparse
 
 from parser.MzIdParser import MzIdParser
 import logging.config
-from parser.api_writer import APIWriter
+from parser.APIWriter import APIWriter
 from config.config_parser import get_conn_str
-from parser.database_writer import DatabaseWriter
+from parser.DatabaseWriter import DatabaseWriter
 
 logging_config_file = os.path.join(os.path.dirname(__file__), '../config/logging.ini')
 logging.config.fileConfig(logging_config_file)

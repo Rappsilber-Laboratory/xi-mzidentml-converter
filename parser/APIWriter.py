@@ -3,7 +3,7 @@ import requests
 import json
 
 from config.config_parser import get_api_configs
-from parser.writer import Writer
+from parser.Writer import Writer
 
 
 # noinspection PyPep8Naming

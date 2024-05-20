@@ -185,6 +185,7 @@ class MGFReader(SpectraReader):
                     spec_id = int(spec_id)
                 except ValueError:
                     raise PeakListParseError("invalid spectrum ID format!")
+            # noinspection PyUnresolvedReferences
             spec = self._reader[spec_id]
 
         # MS:1000775 single peak list nativeID format
@@ -193,6 +194,7 @@ class MGFReader(SpectraReader):
         # typically in a folder of PKL or DTAs, where each sourceFileRef is different.
         elif self.spectrum_id_format_accession == 'MS:1000775':
             spec_id = 0
+            # noinspection PyUnresolvedReferences
             spec = self._reader[spec_id]
 
         # # MS:1000768 Thermo nativeID format: ToDo: not supported for now.

@@ -39,8 +39,8 @@ def get_api_configs():
     """
     api_configs = parse_config(find_config_file(), "api")
     config = {"base_url": os.environ.get('BASE_URL') or api_configs.get("base_url"),
-             "api_key": os.environ.get('API_KEY') or api_configs.get("api_key"),
-             "api_key_value": os.environ.get('API_KEY_VALUE') or api_configs.get("api_key_value")}
+              "api_key": os.environ.get('API_KEY') or api_configs.get("api_key"),
+              "api_key_value": os.environ.get('API_KEY_VALUE') or api_configs.get("api_key_value")}
     return config
 
 

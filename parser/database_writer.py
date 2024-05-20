@@ -3,8 +3,8 @@ from sqlalchemy import Table
 from parser.database.create_db_schema import create_schema
 from sqlalchemy_utils import database_exists
 
-# todo - ask about why this isn't sub class of writer, also whats our file nameing converntion
 
+# todo - ask about why this isn't sub class of writer, also file naming converntion
 class DatabaseWriter:
     """Class for writing results to a relational database."""
 

@@ -12,6 +12,7 @@ from time import time
 import obonet
 from pyteomics import mzid  # https://pyteomics.readthedocs.io/en/latest/data.html#controlled-vocabularies
 from pyteomics.auxiliary import cvquery
+# noinspection PyProtectedMember
 from pyteomics.xml import _local_name
 from lxml import etree
 from sqlalchemy.exc import SQLAlchemyError
@@ -24,6 +25,7 @@ class MzIdParseException(Exception):
     pass
 
 
+# noinspection PyProtectedMember
 class MzIdParser:
     """Class for parsing identification data from mzIdentML."""
 
@@ -479,6 +481,7 @@ class MzIdParser:
                             crosslinker_accession = mod['name'].accession
                         else:
                             crosslinker_accession = None
+                            # Todo: reinstate this warning
                             # self.warnings.append(
                             #     f'No accession for crosslinker {crosslinker_pair_id} for peptide {pep_id}')
                     # crosslink acceptor/
@@ -506,7 +509,7 @@ class MzIdParser:
                 'link_site1': link_site1,
                 # 'link_site2': link_site2,  # ToDo: loop link support
                 'crosslinker_modmass': crosslinker_modmass,
-                'crosslinker_pair_id': str(crosslinker_pair_id),
+                'crosslinker_pair_id': str(crosslinker_pair_id), # todo - do we want to convert None to str
                 'crosslinker_accession': crosslinker_accession
             }
 

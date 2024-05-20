@@ -203,12 +203,12 @@ class AbstractCsvParser(abc.ABC):
         self.parse_db_sequences()  # overridden (empty function) in xiSPEC subclass
         self.main_loop()
 
-        meta_col_names = [col.replace("meta_", "") for col in self.meta_columns]
-        while len(meta_col_names) < 3:
-            meta_col_names.append(-1)
-        meta_data = [self.writer.upload_id] + meta_col_names + [self.contains_crosslinks]
-        # ToDo: need to create MetaData
-        # self.writer.write_data('MetaData', meta_data)
+        # meta_col_names = [col.replace("meta_", "") for col in self.meta_columns]
+        # while len(meta_col_names) < 3:
+        #     meta_col_names.append(-1)
+        # meta_data = [self.writer.upload_id] + meta_col_names + [self.contains_crosslinks]
+        # # ToDo: need to create MetaData
+        # # self.writer.write_data('MetaData', meta_data)
 
         self.logger.info('all done! Total time: ' + str(round(time() - start_time, 2)) + " sec")
 

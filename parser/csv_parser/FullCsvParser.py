@@ -149,7 +149,7 @@ class FullCsvParser(AbstractCsvParser):
                 raise CsvParseException(
                     'Invalid passThreshold value: %s for row: %s' % (id_item['passthreshold'], row_number))
 
-            # fragmenttolerance
+            # fragmenttolerance - ToDo: fix - would beed to write SpectrumIdentificationProtocol for CSV
             if not re.match('^([0-9.]+) (ppm|Da)$', str(id_item['fragmenttolerance'])):
                 raise CsvParseException(
                     'Invalid FragmentTolerance value: %s in row: %s' % (id_item['fragmenttolerance'], row_number))
@@ -168,6 +168,7 @@ class FullCsvParser(AbstractCsvParser):
                 'z',
                 ''  # split will add an empty sell if string ends with ';'
             ]
+            # ToDo: fix - would beed to write SpectrumIdentificationProtocol for CSV
             if any([True for ion in ions if ion not in valid_ions]):
                 raise CsvParseException(
                     'Unsupported IonType in: %s in row %s! Supported ions are: peptide;a;b;c;x;y;z.'

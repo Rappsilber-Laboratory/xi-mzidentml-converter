@@ -187,6 +187,7 @@ class LinksOnlyCsvParser(AbstractCsvParser):
                     pep2_id = None
 
                 m = re.search(r'..\|(.*)\|(.*)\s?', protein_list1[i])
+                # ToDO: fix?
                 accession = protein_list1[i]
                 if m:
                     accession = m.groups()[0]
@@ -209,6 +210,7 @@ class LinksOnlyCsvParser(AbstractCsvParser):
                 for i in range(len(protein_list2)):
 
                     m = re.search(r'..\|(.*)\|(.*)\s?', protein_list2[i])
+                    # ToDo: fix?
                     accession = protein_list2[i]
                     if m:
                         accession = m.groups()[0]

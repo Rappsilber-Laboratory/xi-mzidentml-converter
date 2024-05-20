@@ -5,34 +5,39 @@ import json
 
 
 class FullCsvParser(AbstractCsvParser):
-    required_cols = [
-        'pepseq1',
-        'peppos1',
-        'linkpos1',
-        'protein1',
-        'pepseq2',
-        'peppos2',
-        'linkpos2',
-        'protein2',
-        'peaklistfilename',
-        'scanid',
-        'charge',
-        'crosslinkermodmass',
-        # 'expMZ'
-    ]
 
-    optional_cols = [
-        # 'spectrum_id' $ ToDo: get rid of this? select alternatives by scanid and peaklistfilename?
-        'rank',
-        'fragmenttolerance',
-        'iontypes',
-        'passthreshold',
-        'score',
-        'decoy1',
-        'decoy2',
-        'expmz',  # ToDo: required in mzid - also make required col?
-        'calcmz'
-    ]
+    @property
+    def required_cols(self):
+        return [
+            'pepseq1',
+            'peppos1',
+            'linkpos1',
+            'protein1',
+            'pepseq2',
+            'peppos2',
+            'linkpos2',
+            'protein2',
+            'peaklistfilename',
+            'scanid',
+            'charge',
+            'crosslinkermodmass',
+            # 'expMZ'
+        ]
+
+    @property
+    def optional_cols(self):
+        return [
+            # 'spectrum_id' $ ToDo: get rid of this? select alternatives by scanid and peaklistfilename?
+            'rank',
+            'fragmenttolerance',
+            'iontypes',
+            'passthreshold',
+            'score',
+            'decoy1',
+            'decoy2',
+            'expmz',  # ToDo: required in mzid - also make required col?
+            'calcmz'
+        ]
 
     def main_loop(self):
         main_loop_start_time = time()
@@ -157,17 +162,17 @@ class FullCsvParser(AbstractCsvParser):
             #     fragment_tolerance = id_item['fragmenttolerance']
 
             # iontypes
-            ions = id_item['iontypes'].split(';')
-            valid_ions = [
-                'peptide',
-                'a',
-                'b',
-                'c',
-                'x',
-                'y',
-                'z',
-                ''  # split will add an empty sell if string ends with ';'
-            ]
+            # ions = id_item['iontypes'].split(';')
+            # valid_ions = [
+            #     'peptide',
+            #     'a',
+            #     'b',
+            #     'c',
+            #     'x',
+            #     'y',
+            #     'z',
+            #     ''  # split will add an empty sell if string ends with ';'
+            # ]
             # ToDo: fix - would beed to write SpectrumIdentificationProtocol for CSV
             # if any([True for ion in ions if ion not in valid_ions]):
             #     raise CsvParseException(

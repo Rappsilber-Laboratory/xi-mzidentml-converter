@@ -6,20 +6,26 @@ import json
 
 
 class LinksOnlyCsvParser(AbstractCsvParser):
-    required_cols = [
-        'abspos1',
-        'protein1',
-        'abspos2',
-        'protein2',
-    ]
 
-    optional_cols = [
-        'passthreshold',
-        'score',
-        'decoy1',
-        'decoy2',
-    ]
+    @property
+    def required_cols(self):
+        return [
+            'abspos1',
+            'protein1',
+            'abspos2',
+            'protein2',
+        ]
 
+    @property
+    def optional_cols(self):
+        return [
+            'passthreshold',
+            'score',
+            'decoy1',
+            'decoy2',
+        ]
+
+    # noinspection PyUnboundLocalVariable
     def main_loop(self):
         main_loop_start_time = time()
         self.logger.info('main loop LinksOnlyCsvParser - start')
@@ -186,7 +192,7 @@ class LinksOnlyCsvParser(AbstractCsvParser):
                 else:
                     pep2_id = None
 
-                m = re.search(r'..\|(.*)\|(.*)\s?', protein_list1[i])
+                # m = re.search(r'..\|(.*)\|(.*)\s?', protein_list1[i])
                 # ToDO: fix?
                 # accession = protein_list1[i]
                 # if m:
@@ -208,7 +214,6 @@ class LinksOnlyCsvParser(AbstractCsvParser):
                     raise Exception('Fatal! peptide id error!')
 
                 for i in range(len(protein_list2)):
-
                     # m = re.search(r'..\|(.*)\|(.*)\s?', protein_list2[i])
                     # ToDo: fix?
                     # accession = protein_list2[i]

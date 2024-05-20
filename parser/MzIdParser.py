@@ -855,7 +855,7 @@ class MzIdParser:
                     else:
                         raise IOError('unsupported file type: %s' % file_name)
 
-            # todo - looks like potential problem here
+            # todo - looks like potential problem here?
             if len(return_file_list) > 1:
                 raise Exception("more than one mzid file found!")
 

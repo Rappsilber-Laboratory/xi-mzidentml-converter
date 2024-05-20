@@ -6,7 +6,6 @@ from parser.database.create_db_schema import create_schema
 from sqlalchemy_utils import database_exists
 
 
-# todo - ask about why this isn't sub class of writer, also file naming converntion
 class DatabaseWriter(Writer):
     """Class for writing results to a relational database."""
 
@@ -56,7 +55,7 @@ class DatabaseWriter(Writer):
         """
         Update Upload row with mzid info.
 
-        ToDo: have this explicitly or create update func? (this is only time we update so i think func not worth it -cc)
+        ToDo: have this explicitly or create update func?
         :param analysis_software_list: (list) List of analysis software used.
         :param spectra_formats:
         :param provider:

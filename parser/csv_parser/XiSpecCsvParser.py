@@ -2,33 +2,38 @@ from parser.csv_parser.FullCsvParser import FullCsvParser
 
 
 class XiSpecCsvParser(FullCsvParser):
-    required_cols = [
-        'scanid',
-        'charge',
-        'pepseq1',
-        'protein1',
-        'peaklistfilename',
-        # 'expMZ'
-    ]
 
-    optional_cols = [
-        'rank',
-        'fragmenttolerance',
-        'iontypes',
-        'pepseq2',
-        'linkpos1',
-        'linkpos2',
-        'crosslinkermodmass',
-        'passthreshold',
-        'score',
-        'decoy1',
-        'decoy2',
-        'protein2',
-        'peppos1',
-        'peppos2',
-        'expmz',  # ToDo: required in mzid - also make required col?
-        'calcmz'
-    ]
+    @property
+    def required_cols(self):
+        return [
+            'scanid',
+            'charge',
+            'pepseq1',
+            'protein1',
+            'peaklistfilename',
+            # 'expMZ'
+        ]
+
+    @property
+    def optional_cols(self):
+        return [
+            'rank',
+            'fragmenttolerance',
+            'iontypes',
+            'pepseq2',
+            'linkpos1',
+            'linkpos2',
+            'crosslinkermodmass',
+            'passthreshold',
+            'score',
+            'decoy1',
+            'decoy2',
+            'protein2',
+            'peppos1',
+            'peppos2',
+            'expmz',  # ToDo: required in mzid - also make required col?
+            'calcmz'
+        ]
 
     default_values = {
         'rank': 1,

@@ -2,6 +2,7 @@ from parser import FullCsvParser, NoPeakListsCsvParser, LinksOnlyCsvParser
 from parser.DatabaseWriter import DatabaseWriter
 
 
+# noinspection PyUnusedLocal
 def parse_full_csv_into_postgresql(mzid_file, peaklist, tmpdir, logger, use_database, engine):
     # create temp user for user_id
     user_id = 1
@@ -16,6 +17,7 @@ def parse_full_csv_into_postgresql(mzid_file, peaklist, tmpdir, logger, use_data
     return id_parser
 
 
+# noinspection PyUnusedLocal
 def parse_no_peak_lists_csv_into_postgresql(mzid_file, peaklist, tmpdir, logger, use_database, engine):
     # create temp user for user_id
     user_id = 1
@@ -30,6 +32,7 @@ def parse_no_peak_lists_csv_into_postgresql(mzid_file, peaklist, tmpdir, logger,
     return id_parser
 
 
+# noinspection PyUnusedLocal
 def parse_links_only_csv_into_postgresql(mzid_file, peaklist, tmpdir, logger, use_database, engine):
     # create temp user for user_id
     user_id = 1
@@ -44,6 +47,7 @@ def parse_links_only_csv_into_postgresql(mzid_file, peaklist, tmpdir, logger, us
     return id_parser
 
 
+# noinspection PyUnusedLocal
 def parse_full_csv_into_sqllite(mzid_file, peaklist, tmpdir, logger, use_database, engine):
     # create writer
     writer = DatabaseWriter(engine.url)
@@ -56,6 +60,7 @@ def parse_full_csv_into_sqllite(mzid_file, peaklist, tmpdir, logger, use_databas
     return id_parser
 
 
+# noinspection PyUnusedLocal
 def parse_no_peak_lists_csv_into_sqllite(mzid_file, peaklist, tmpdir, logger, use_database, engine):
     # create writer
     writer = DatabaseWriter(engine.url)
@@ -68,6 +73,7 @@ def parse_no_peak_lists_csv_into_sqllite(mzid_file, peaklist, tmpdir, logger, us
     return id_parser
 
 
+# noinspection PyUnusedLocal
 def parse_links_only_csv_into_sqllite(mzid_file, peaklist, tmpdir, logger, use_database, engine):
     # create writer
     writer = DatabaseWriter(engine.url)

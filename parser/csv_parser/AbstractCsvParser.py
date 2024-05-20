@@ -26,6 +26,16 @@ class AbstractCsvParser(abc.ABC):
 
     """
 
+    @property
+    @abc.abstractmethod
+    def required_cols(self):
+        pass
+
+    @property
+    @abc.abstractmethod
+    def optional_cols(self):
+        pass
+
     default_values = {
         'rank': 1,
         'pepseq1': '',

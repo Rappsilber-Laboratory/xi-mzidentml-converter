@@ -55,7 +55,6 @@ def compare_modified_peptide(results):
     assert results[0].mod_positions == []
     assert results[0].link_site1 is None  # location of <Modification> with cross-link acceptor/receiver cvParam
     assert results[0].crosslinker_modmass == 0  # monoisotopicMassDelta of <Modification> with crosslink acc/rec cvParam
-    # todo - should following not be a string when it's 'None'
     assert results[0].crosslinker_pair_id is None  # value of cross-link acceptor/receiver cvParam
     assert results[0].crosslinker_accession is None
 
@@ -67,7 +66,6 @@ def compare_modified_peptide(results):
     assert results[1].mod_positions == []
     assert results[1].link_site1 is None  # location of <Modification> with cross-link acceptor/receiver cvParam
     assert results[1].crosslinker_modmass == 0  # monoisotopicMassDelta of <Modification> with crosslink acc/rec cvParam
-    # todo - should following not be a string
     assert results[1].crosslinker_pair_id is None  # value of cross-link acceptor/receiver cvParam
     assert results[1].crosslinker_accession is None
 
@@ -79,7 +77,6 @@ def compare_modified_peptide(results):
     assert results[284].mod_positions == [7, 21]
     assert results[284].link_site1 == 3  # location of <Modification> with cross-link acceptor/receiver cvParam
     assert results[284].crosslinker_modmass == -2.01565  # monoisotopicMassDelta of Modification with crosslink cvParam
-    # todo - should following not be a string
     assert results[284].crosslinker_pair_id is None  # value of cross-link acceptor/receiver cvParam
     assert results[284].crosslinker_accession == 'UNIMOD:2020'  # the file has
 
@@ -92,7 +89,6 @@ def compare_modified_peptide(results):
     assert results[285].link_site1 == 3  # location of <Modification> with cross-link acceptor/receiver cvParam
     assert results[
                285].crosslinker_modmass == 0  # monoisotopicMassDelta of <Modification> with crosslink acc/rec cvParam
-    # todo - should following not be a string
     assert results[285].crosslinker_pair_id == '37.0'  # value of cross-link acceptor/receiver cvParam
     assert results[0].crosslinker_accession is None
 

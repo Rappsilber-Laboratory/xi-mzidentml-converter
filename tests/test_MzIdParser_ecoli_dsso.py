@@ -1222,6 +1222,7 @@ def test_psql_mzml_mzid_parser(tmpdir, use_database, engine):
     engine.dispose()
 
 
+# noinspection PyTestUnpassedFixture
 def test_sqlite_mgf_xispec_mzid_parser(tmpdir):
     # file paths
     fixtures_dir = os.path.join(os.path.dirname(__file__), 'fixtures', 'mzid_parser')
@@ -1270,7 +1271,7 @@ def test_sqlite_mgf_xispec_mzid_parser(tmpdir):
         # Match
         stmt = Table("Match", id_parser.writer.meta,
                      autoload_with=id_parser.writer.engine, quote=False).select()
-        rs = conn.execute(stmt)
+        conn.execute(stmt)
 
         # SpectrumIdentificationProtocol
         stmt = Table("SpectrumIdentificationProtocol", id_parser.writer.meta,
@@ -1293,6 +1294,7 @@ def test_sqlite_mgf_xispec_mzid_parser(tmpdir):
     engine.dispose()
 
 
+# noinspection PyTestUnpassedFixture
 def test_sqlite_mzml_xispec_mzid_parser(tmpdir):
     # file paths
     fixtures_dir = os.path.join(os.path.dirname(__file__), 'fixtures', 'mzid_parser')
@@ -1339,13 +1341,13 @@ def test_sqlite_mzml_xispec_mzid_parser(tmpdir):
         # Spectrum
         stmt = Table("Spectrum", id_parser.writer.meta, autoload_with=id_parser.writer.engine,
                      quote=False).select()
-        rs = conn.execute(stmt)
+        conn.execute(stmt)
         # ToDo: create and use compare_spectrum_mzml()
 
         # Match
         stmt = Table("Match", id_parser.writer.meta,
                      autoload_with=id_parser.writer.engine, quote=False).select()
-        rs = conn.execute(stmt)
+        conn.execute(stmt)
 
         # SpectrumIdentificationProtocol
         stmt = Table("SpectrumIdentificationProtocol", id_parser.writer.meta,

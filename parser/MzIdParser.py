@@ -509,7 +509,7 @@ class MzIdParser:
                 'link_site1': link_site1,
                 # 'link_site2': link_site2,  # ToDo: loop link support
                 'crosslinker_modmass': crosslinker_modmass,
-                'crosslinker_pair_id': str(crosslinker_pair_id), # todo - do we want to convert None to str
+                'crosslinker_pair_id': crosslinker_pair_id,
                 'crosslinker_accession': crosslinker_accession
             }
 

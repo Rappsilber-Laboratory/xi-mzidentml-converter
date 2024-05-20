@@ -55,7 +55,7 @@ def compare_modified_peptide(results):
     assert results[0].link_site1 == None # location of <Modification> with cross-link acceptor/receiver cvParam
     assert results[0].crosslinker_modmass == 0 # monoisotopicMassDelta of <Modification> with crosslink acc/rec cvParam
     # todo - should following not be a string when it's 'None'
-    assert results[0].crosslinker_pair_id == 'None'  # value of cross-link acceptor/receiver cvParam
+    assert results[0].crosslinker_pair_id == None  # value of cross-link acceptor/receiver cvParam
     assert results[0].crosslinker_accession == None
 
     assert results[1].id == 'peptide_69_1'  # id from <Peptide> id # mascot seems to duplicate peptides
@@ -67,7 +67,7 @@ def compare_modified_peptide(results):
     assert results[1].link_site1 == None # location of <Modification> with cross-link acceptor/receiver cvParam
     assert results[1].crosslinker_modmass == 0 # monoisotopicMassDelta of <Modification> with crosslink acc/rec cvParam
     # todo - should following not be a string
-    assert results[1].crosslinker_pair_id == 'None'  # value of cross-link acceptor/receiver cvParam
+    assert results[1].crosslinker_pair_id == None  # value of cross-link acceptor/receiver cvParam
     assert results[1].crosslinker_accession == None
 
     assert results[284].id == 'peptide_1497_2_p1'  # id from <Peptide> id
@@ -79,7 +79,7 @@ def compare_modified_peptide(results):
     assert results[284].link_site1 == 3 # location of <Modification> with cross-link acceptor/receiver cvParam
     assert results[284].crosslinker_modmass == -2.01565 # monoisotopicMassDelta of <Modification> with crosslink acc/rec cvParam
     # todo - should following not be a string
-    assert results[284].crosslinker_pair_id == 'None'  # value of cross-link acceptor/receiver cvParam
+    assert results[284].crosslinker_pair_id == None  # value of cross-link acceptor/receiver cvParam
     assert results[284].crosslinker_accession == 'UNIMOD:2020'  # the file has
 
     assert results[285].id == 'peptide_1497_2_p2'  # id from <Peptide> id

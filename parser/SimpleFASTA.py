@@ -3,6 +3,7 @@ import re
 
 #  why aren't we using pyteomics? todo? probably we haven't look at yet coz its only used by cvs parsers not mzid
 
+# noinspection PyUnusedLocal
 def get_db_sequence_dict(fasta_file_list):
     db_sequence_dict = {}
     identifier = None

@@ -15,7 +15,6 @@ class DatabaseWriter(Writer):
         Initialises the database connection and the writer in general.
 
         :param connection_str: database connection string
-        :param user_id: UUID of the UserAccount (postgresql specific)
         """
         # Connection setup.
         # The 'engine' in SQLAlchemy is a Factory and connection pool to the database.

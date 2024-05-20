@@ -2,7 +2,6 @@ import argparse
 import sys
 import os
 import socket
-import traceback
 
 import requests
 import time
@@ -78,7 +77,6 @@ def main():
         sys.exit(0)
     except Exception as ex:
         logger.error(ex)
-        traceback.print_stack(ex)
         sys.exit(1)
 
 
@@ -162,18 +160,18 @@ def convert_from_ftp(ftp_url, temp_dir, project_identifier, writer_method, dont_
     files = get_ftp_file_list(ftp_ip, parsed_url.path)
     for f in files:
         # check file not already in temp dir
-        if not (os.path.isfile(os.path.join(path, f))
+        if not (os.path.isfile(os.path.join(str(path), f))
                 or f.lower == "generated"  # dunno what these files are but they seem to make ftp break
                 or f.lower().endswith('raw')
                 or f.lower().endswith('raw.gz')
                 or f.lower().endswith('all.zip')
                 or f.lower().endswith('csv')
                 or f.lower().endswith('txt')):
-            logger.info('Downloading ' + f + ' to ' + path)
+            logger.info('Downloading ' + f + ' to ' + str(path))
             ftp = get_ftp_login(ftp_ip)
             try:
                 ftp.cwd(parsed_url.path)
-                ftp.retrbinary("RETR " + f, open(os.path.join(path, f), 'wb').write)
+                ftp.retrbinary("RETR " + f, open(os.path.join(str(path), f), 'wb').write)
                 ftp.quit()
             except ftplib.error_perm as e:
                 ftp.quit()
@@ -186,7 +184,7 @@ def convert_from_ftp(ftp_url, temp_dir, project_identifier, writer_method, dont_
         try:
             shutil.rmtree(path)
         except OSError as e:
-            logger.error('Failed to delete temp directory ' + path)
+            logger.error('Failed to delete temp directory ' + str(path))
             logger.error('Error: ' + e.strerror)
             raise e
 
@@ -236,7 +234,7 @@ def convert_dir(local_dir, project_identifier, writer_method, nopeaklist=False):
             conn_str = get_conn_str()
             if writer_method.lower() == 'api':
                 writer = APIWriter(pxid=project_identifier)
-            elif writer_method.lower() == 'db':
+            else:
                 writer = DatabaseWriter(conn_str, pxid=project_identifier)
             id_parser = MzIdParser(os.path.join(local_dir, file), local_dir, peaklist_dir, writer, logger)
             try:

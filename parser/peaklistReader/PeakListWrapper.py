@@ -139,7 +139,7 @@ class SpectraReader(ABC):
         """
         self._source = source
         if source_path is None:
-            if type(source) == str:
+            if isinstance(source, str):
                 self.source_path = source
             elif issubclass(type(source), io.TextIOBase) or \
                     issubclass(type(source), tarfile.ExFileObject):

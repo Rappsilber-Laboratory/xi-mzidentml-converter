@@ -34,14 +34,15 @@ def compare_db_sequence(results):
 
 def compare_peptide_evidence(results):
     assert len(results) == 1379
-    assert results[0].peptide_ref == 'peptide_67_1' # peptide_ref from <PeptideEvidence>
-    assert results[0].dbsequence_ref == 'DBSeq_1_SCP_CHIOP' # dbsequence_ref from <PeptideEvidence>
+    assert results[0].peptide_ref == 'peptide_67_1'  # peptide_ref from <PeptideEvidence>
+    assert results[0].dbsequence_ref == 'DBSeq_1_SCP_CHIOP'  # dbsequence_ref from <PeptideEvidence>
     assert results[0].pep_start == 1  # start from <PeptideEvidence>
     assert not results[0].is_decoy  # is_decoy from <PeptideEvidence>
     assert results[1378].peptide_ref == 'peptide_1497_2_p2'  # peptide_ref from <PeptideEvidence>
     assert results[1378].dbsequence_ref == 'DBSeq_1_LYSC_CHICK'  # dbsequence_ref from <PeptideEvidence>
     assert results[1378].pep_start == 80  # start from <PeptideEvidence>
     assert not results[1378].is_decoy  # is_decoy from <PeptideEvidence>
+
 
 def compare_modified_peptide(results):
     assert len(results) == 286
@@ -52,11 +53,11 @@ def compare_modified_peptide(results):
     assert results[0].mod_avg_mass_deltas == []
     assert results[0].mod_monoiso_mass_deltas == []
     assert results[0].mod_positions == []
-    assert results[0].link_site1 == None # location of <Modification> with cross-link acceptor/receiver cvParam
-    assert results[0].crosslinker_modmass == 0 # monoisotopicMassDelta of <Modification> with crosslink acc/rec cvParam
+    assert results[0].link_site1 is None  # location of <Modification> with cross-link acceptor/receiver cvParam
+    assert results[0].crosslinker_modmass == 0  # monoisotopicMassDelta of <Modification> with crosslink acc/rec cvParam
     # todo - should following not be a string when it's 'None'
-    assert results[0].crosslinker_pair_id == None  # value of cross-link acceptor/receiver cvParam
-    assert results[0].crosslinker_accession == None
+    assert results[0].crosslinker_pair_id is None  # value of cross-link acceptor/receiver cvParam
+    assert results[0].crosslinker_accession is None
 
     assert results[1].id == 'peptide_69_1'  # id from <Peptide> id # mascot seems to duplicate peptides
     assert results[1].base_sequence == 'VATVSLPR'  # value of <PeptideSequence>
@@ -64,11 +65,11 @@ def compare_modified_peptide(results):
     assert results[1].mod_avg_mass_deltas == []
     assert results[1].mod_monoiso_mass_deltas == []
     assert results[1].mod_positions == []
-    assert results[1].link_site1 == None # location of <Modification> with cross-link acceptor/receiver cvParam
-    assert results[1].crosslinker_modmass == 0 # monoisotopicMassDelta of <Modification> with crosslink acc/rec cvParam
+    assert results[1].link_site1 is None  # location of <Modification> with cross-link acceptor/receiver cvParam
+    assert results[1].crosslinker_modmass == 0  # monoisotopicMassDelta of <Modification> with crosslink acc/rec cvParam
     # todo - should following not be a string
-    assert results[1].crosslinker_pair_id == None  # value of cross-link acceptor/receiver cvParam
-    assert results[1].crosslinker_accession == None
+    assert results[1].crosslinker_pair_id is None  # value of cross-link acceptor/receiver cvParam
+    assert results[1].crosslinker_accession is None
 
     assert results[284].id == 'peptide_1497_2_p1'  # id from <Peptide> id
     assert results[284].base_sequence == 'NLCNIPCSALLSSDITASVNCAK'  # value of <PeptideSequence>
@@ -76,10 +77,10 @@ def compare_modified_peptide(results):
     assert results[284].mod_avg_mass_deltas == [None, None]
     assert results[284].mod_monoiso_mass_deltas == [125.047679, 125.047679]
     assert results[284].mod_positions == [7, 21]
-    assert results[284].link_site1 == 3 # location of <Modification> with cross-link acceptor/receiver cvParam
-    assert results[284].crosslinker_modmass == -2.01565 # monoisotopicMassDelta of <Modification> with crosslink acc/rec cvParam
+    assert results[284].link_site1 == 3  # location of <Modification> with cross-link acceptor/receiver cvParam
+    assert results[284].crosslinker_modmass == -2.01565  # monoisotopicMassDelta of Modification with crosslink cvParam
     # todo - should following not be a string
-    assert results[284].crosslinker_pair_id == None  # value of cross-link acceptor/receiver cvParam
+    assert results[284].crosslinker_pair_id is None  # value of cross-link acceptor/receiver cvParam
     assert results[284].crosslinker_accession == 'UNIMOD:'  # the file has
 
     assert results[285].id == 'peptide_1497_2_p2'  # id from <Peptide> id
@@ -88,11 +89,12 @@ def compare_modified_peptide(results):
     assert results[285].mod_avg_mass_deltas == []
     assert results[285].mod_monoiso_mass_deltas == []
     assert results[285].mod_positions == []
-    assert results[285].link_site1 == 3 # location of <Modification> with cross-link acceptor/receiver cvParam
-    assert results[285].crosslinker_modmass == 0 # monoisotopicMassDelta of <Modification> with crosslink acc/rec cvParam
+    assert results[285].link_site1 == 3  # location of <Modification> with cross-link acceptor/receiver cvParam
+    assert results[
+               285].crosslinker_modmass == 0  # monoisotopicMassDelta of <Modification> with crosslink acc/rec cvParam
     # todo - should following not be a string
     assert results[285].crosslinker_pair_id == '37.0'  # value of cross-link acceptor/receiver cvParam
-    assert results[0].crosslinker_accession == None
+    assert results[0].crosslinker_accession is None
 
 
 def compare_modification(results):

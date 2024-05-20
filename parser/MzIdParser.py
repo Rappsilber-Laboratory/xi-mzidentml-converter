@@ -810,7 +810,7 @@ class MzIdParser:
             filtered_idx = [i for i, a in enumerate(accessions) if a != '']
         else:
             children = []
-            if type(super_cls_accession) != list:
+            if not isinstance(super_cls_accession, list):
                 super_cls_accession = [super_cls_accession]
             for sp_accession in super_cls_accession:
 
@@ -913,6 +913,7 @@ def iterfind_when(source, target_name, condition_name, stack_predicate, **kwargs
                 state = stack_predicate(tag)
         else:
             if lc_name == target_name and state:
+                # noinspection PyProtectedMember
                 value = source._get_info_smart(tag, **kwargs)
                 for t in history:
                     t.clear()

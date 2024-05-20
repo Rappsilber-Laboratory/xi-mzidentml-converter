@@ -150,11 +150,11 @@ class FullCsvParser(AbstractCsvParser):
                     'Invalid passThreshold value: %s for row: %s' % (id_item['passthreshold'], row_number))
 
             # fragmenttolerance - ToDo: fix - would beed to write SpectrumIdentificationProtocol for CSV
-            if not re.match('^([0-9.]+) (ppm|Da)$', str(id_item['fragmenttolerance'])):
-                raise CsvParseException(
-                    'Invalid FragmentTolerance value: %s in row: %s' % (id_item['fragmenttolerance'], row_number))
-            else:
-                fragment_tolerance = id_item['fragmenttolerance']
+            # if not re.match('^([0-9.]+) (ppm|Da)$', str(id_item['fragmenttolerance'])):
+            #     raise CsvParseException(
+            #         'Invalid FragmentTolerance value: %s in row: %s' % (id_item['fragmenttolerance'], row_number))
+            # else:
+            #     fragment_tolerance = id_item['fragmenttolerance']
 
             # iontypes
             ions = id_item['iontypes'].split(';')
@@ -169,12 +169,12 @@ class FullCsvParser(AbstractCsvParser):
                 ''  # split will add an empty sell if string ends with ';'
             ]
             # ToDo: fix - would beed to write SpectrumIdentificationProtocol for CSV
-            if any([True for ion in ions if ion not in valid_ions]):
-                raise CsvParseException(
-                    'Unsupported IonType in: %s in row %s! Supported ions are: peptide;a;b;c;x;y;z.'
-                    % (id_item['iontypes'], row_number)
-                )
-            ion_types = id_item['iontypes']
+            # if any([True for ion in ions if ion not in valid_ions]):
+            #     raise CsvParseException(
+            #         'Unsupported IonType in: %s in row %s! Supported ions are: peptide;a;b;c;x;y;z.'
+            #         % (id_item['iontypes'], row_number)
+            #     )
+            # ion_types = id_item['iontypes']
 
             # score
             try:

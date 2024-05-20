@@ -270,14 +270,14 @@ def compare_spectrum_identification_protocol(results):
 
 def compare_analysis_collection_mgf(results):
     assert len(results) == 2
-    assert results[
-               0].spectrum_identification_list_ref == 'SII_LIST_1_1_0_recal_B190717_20_HF_LS_IN_130_ECLP_DSSO_01_SCX23_hSAX01_rep2.mgf'
+    assert (results[0].spectrum_identification_list_ref ==
+            'SII_LIST_1_1_0_recal_B190717_20_HF_LS_IN_130_ECLP_DSSO_01_SCX23_hSAX01_rep2.mgf')
     assert results[0].spectrum_identification_protocol_ref == 'SearchProtocol_1_0'
     assert results[0].spectra_data_refs == ['SD_0_recal_B190717_20_HF_LS_IN_130_ECLP_DSSO_01_SCX23_hSAX01_rep2.mgf']
     assert results[0].search_database_refs == ['SDB_0_0']
 
-    assert results[
-               1].spectrum_identification_list_ref == 'SII_LIST_1_1_0_recal_B190717_13_HF_LS_IN_130_ECLP_DSSO_01_SCX23_hSAX05_rep2.mgf'
+    assert (results[1].spectrum_identification_list_ref ==
+            'SII_LIST_1_1_0_recal_B190717_13_HF_LS_IN_130_ECLP_DSSO_01_SCX23_hSAX05_rep2.mgf')
     assert results[1].spectrum_identification_protocol_ref == 'SearchProtocol_1_0'
     assert results[1].spectra_data_refs == ['SD_0_recal_B190717_13_HF_LS_IN_130_ECLP_DSSO_01_SCX23_hSAX05_rep2.mgf']
     assert results[1].search_database_refs == ['SDB_0_0']
@@ -285,13 +285,13 @@ def compare_analysis_collection_mgf(results):
 
 def compare_analysis_collection_mzml(results):
     assert len(results) == 2
-    assert results[
-               0].spectrum_identification_list_ref == 'SII_LIST_1_1_0_recal_B190717_20_HF_LS_IN_130_ECLP_DSSO_01_SCX23_hSAX01_rep2.mzML'
+    assert (results[0].spectrum_identification_list_ref ==
+            'SII_LIST_1_1_0_recal_B190717_20_HF_LS_IN_130_ECLP_DSSO_01_SCX23_hSAX01_rep2.mzML')
     assert results[0].spectrum_identification_protocol_ref == 'SearchProtocol_1_0'
     assert results[0].spectra_data_refs == ['SD_0_recal_B190717_20_HF_LS_IN_130_ECLP_DSSO_01_SCX23_hSAX01_rep2.mzML']
     assert results[0].search_database_refs == ['SDB_0_0']
-    assert results[
-               1].spectrum_identification_list_ref == 'SII_LIST_1_1_0_recal_B190717_13_HF_LS_IN_130_ECLP_DSSO_01_SCX23_hSAX05_rep2.mzML'
+    assert (results[1].spectrum_identification_list_ref ==
+            'SII_LIST_1_1_0_recal_B190717_13_HF_LS_IN_130_ECLP_DSSO_01_SCX23_hSAX05_rep2.mzML')
     assert results[1].spectrum_identification_protocol_ref == 'SearchProtocol_1_0'
     assert results[1].spectra_data_refs == ['SD_0_recal_B190717_13_HF_LS_IN_130_ECLP_DSSO_01_SCX23_hSAX05_rep2.mzML']
     assert results[1].search_database_refs == ['SDB_0_0']
@@ -428,26 +428,30 @@ def test_psql_mgf_mzid_parser(tmpdir, use_database, engine):
         assert results[0].identification_file_name == 'mgf_ecoli_dsso.mzid'
         assert results[0].provider == {"id": "PROVIDER", "ContactRole": [
             {"contact_ref": "PERSON_DOC_OWNER", "Role": "researcher"}]}
-        assert results[0].audit_collection == {'Organization': {'contact name': 'TU Berlin',
-                                                                'id': 'ORG_DOC_OWNER',
-                                                                'name': 'TU Berlin'},
-                                               'Person': {'Affiliation': [{'organization_ref': 'ORG_DOC_OWNER'}],
-                                                          'contact address': 'TIB 4/4-3 Gebäude 17, Aufgang 1, Raum 476 '
-                                                                             'Gustav-Meyer-Allee 25 13355 Berlin',
-                                                          'contact email': 'lars.kolbowski@tu-berlin.de',
-                                                          'firstName': 'Lars',
-                                                          'id': 'PERSON_DOC_OWNER',
-                                                          'lastName': 'Kolbowski'}}
+        assert results[0].audit_collection == {
+            'Organization': {'contact name': 'TU Berlin',
+                             'id': 'ORG_DOC_OWNER',
+                             'name': 'TU Berlin'},
+            'Person': {'Affiliation': [{'organization_ref': 'ORG_DOC_OWNER'}],
+                       'contact address': 'TIB 4/4-3 Gebäude 17, Aufgang 1, Raum 476 '
+                                          'Gustav-Meyer-Allee 25 13355 Berlin',
+                       'contact email': 'lars.kolbowski@tu-berlin.de',
+                       'firstName': 'Lars',
+                       'id': 'PERSON_DOC_OWNER',
+                       'lastName': 'Kolbowski'}
+        }
         assert results[0].analysis_sample_collection == {}
         assert results[0].bib == []
-        assert results[0].spectra_formats == [{'FileFormat': 'Mascot MGF format',
-                                               'SpectrumIDFormat': 'multiple peak list nativeID format',
-                                               'id': 'SD_0_recal_B190717_20_HF_LS_IN_130_ECLP_DSSO_01_SCX23_hSAX01_rep2.mgf',
-                                               'location': 'recal_B190717_20_HF_LS_IN_130_ECLP_DSSO_01_SCX23_hSAX01_rep2.mgf'},
-                                              {'FileFormat': 'Mascot MGF format',
-                                               'SpectrumIDFormat': 'multiple peak list nativeID format',
-                                               'id': 'SD_0_recal_B190717_13_HF_LS_IN_130_ECLP_DSSO_01_SCX23_hSAX05_rep2.mgf',
-                                               'location': 'recal_B190717_13_HF_LS_IN_130_ECLP_DSSO_01_SCX23_hSAX05_rep2.mgf'}]
+        assert results[0].spectra_formats == [
+            {'FileFormat': 'Mascot MGF format',
+             'SpectrumIDFormat': 'multiple peak list nativeID format',
+             'id': 'SD_0_recal_B190717_20_HF_LS_IN_130_ECLP_DSSO_01_SCX23_hSAX01_rep2.mgf',
+             'location': 'recal_B190717_20_HF_LS_IN_130_ECLP_DSSO_01_SCX23_hSAX01_rep2.mgf'},
+            {'FileFormat': 'Mascot MGF format',
+             'SpectrumIDFormat': 'multiple peak list nativeID format',
+             'id': 'SD_0_recal_B190717_13_HF_LS_IN_130_ECLP_DSSO_01_SCX23_hSAX05_rep2.mgf',
+             'location': 'recal_B190717_13_HF_LS_IN_130_ECLP_DSSO_01_SCX23_hSAX05_rep2.mgf'}
+        ]
         assert results[0].contains_crosslinks
         assert results[0].upload_warnings == []
 
@@ -463,7 +467,7 @@ def test_psql_mzml_mzid_parser(tmpdir, use_database, engine):
     id_parser = parse_mzid_into_postgresql(mzid, peak_list_folder, tmpdir, logger,
                                            use_database, engine)
 
-    with engine.connect() as conn:
+    with (engine.connect() as conn):
         # DBSequence
         stmt = Table("dbsequence", id_parser.writer.meta, autoload_with=id_parser.writer.engine,
                      quote=False).select()
@@ -1138,7 +1142,6 @@ def test_psql_mzml_mzid_parser(tmpdir, use_database, engine):
                                         b'\x00`\xf1\xfa\xb2@\x00\x00\x00\xe0\x083\xb3@\x00\x00\x00\x00\xf1=\xb5@\x00'
                                         b'\x00\x00\xc0\xe9\x9f\xb2@')
 
-
         # Match
         stmt = Table("match", id_parser.writer.meta,
                      autoload_with=id_parser.writer.engine, quote=False).select()
@@ -1189,26 +1192,28 @@ def test_psql_mzml_mzid_parser(tmpdir, use_database, engine):
         assert results[0].identification_file_name == 'mzml_ecoli_dsso.mzid'
         assert results[0].provider == {'ContactRole': [{'Role': 'researcher', 'contact_ref': 'PERSON_DOC_OWNER'}],
                                        'id': 'PROVIDER'}
-        assert results[0].audit_collection == {'Organization': {'contact name': 'TU Berlin',
-                                                                'id': 'ORG_DOC_OWNER',
-                                                                'name': 'TU Berlin'},
-                                               'Person': {'Affiliation': [{'organization_ref': 'ORG_DOC_OWNER'}],
-                                                          'contact address': 'TIB 4/4-3 Gebäude 17, Aufgang 1, Raum 476 '
-                                                                             'Gustav-Meyer-Allee 25 13355 Berlin',
-                                                          'contact email': 'lars.kolbowski@tu-berlin.de',
-                                                          'firstName': 'Lars',
-                                                          'id': 'PERSON_DOC_OWNER',
-                                                          'lastName': 'Kolbowski'}}
+        assert results[0].audit_collection == {
+            'Organization': {'contact name': 'TU Berlin',
+                             'id': 'ORG_DOC_OWNER',
+                             'name': 'TU Berlin'},
+            'Person': {'Affiliation': [{'organization_ref': 'ORG_DOC_OWNER'}],
+                       'contact address': 'TIB 4/4-3 Gebäude 17, Aufgang 1, Raum 476 '
+                                          'Gustav-Meyer-Allee 25 13355 Berlin',
+                       'contact email': 'lars.kolbowski@tu-berlin.de',
+                       'firstName': 'Lars',
+                       'id': 'PERSON_DOC_OWNER',
+                       'lastName': 'Kolbowski'}}
         assert results[0].analysis_sample_collection == {}
         assert results[0].bib == []
-        assert results[0].spectra_formats == [{'FileFormat': 'mzML format',
-                                               'SpectrumIDFormat': 'mzML unique identifier',
-                                               'id': 'SD_0_recal_B190717_20_HF_LS_IN_130_ECLP_DSSO_01_SCX23_hSAX01_rep2.mzML',
-                                               'location': 'B190717_20_HF_LS_IN_130_ECLP_DSSO_01_SCX23_hSAX01_rep2.mzML'},
-                                              {'FileFormat': 'mzML format',
-                                               'SpectrumIDFormat': 'mzML unique identifier',
-                                               'id': 'SD_0_recal_B190717_13_HF_LS_IN_130_ECLP_DSSO_01_SCX23_hSAX05_rep2.mzML',
-                                               'location': 'B190717_13_HF_LS_IN_130_ECLP_DSSO_01_SCX23_hSAX05_rep2.mzML'}]
+        assert results[0].spectra_formats == [
+            {'FileFormat': 'mzML format',
+             'SpectrumIDFormat': 'mzML unique identifier',
+             'id': 'SD_0_recal_B190717_20_HF_LS_IN_130_ECLP_DSSO_01_SCX23_hSAX01_rep2.mzML',
+             'location': 'B190717_20_HF_LS_IN_130_ECLP_DSSO_01_SCX23_hSAX01_rep2.mzML'},
+            {'FileFormat': 'mzML format',
+             'SpectrumIDFormat': 'mzML unique identifier',
+             'id': 'SD_0_recal_B190717_13_HF_LS_IN_130_ECLP_DSSO_01_SCX23_hSAX05_rep2.mzML',
+             'location': 'B190717_13_HF_LS_IN_130_ECLP_DSSO_01_SCX23_hSAX05_rep2.mzML'}]
         assert results[0].contains_crosslinks
         # assert results[0].upload_warnings == [
         #     'mzidentML file does not specify any fragment ions (child terms of MS_1002473) within '

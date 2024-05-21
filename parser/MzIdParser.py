@@ -453,26 +453,30 @@ class MzIdParser:
         peptide_index = 0
         peptides = []
         for pep_id in self.mzid_reader._offset_index["Peptide"].keys():
+            if pep_id == 'peptide_1497_2_p1':
+                pass
             peptide = self.mzid_reader.get_by_id(pep_id, tag_id='Peptide')
-            # self.logger.debug(peptide)
-            link_site1 = None
+            donor_link_site = None
+            acc_link_site = None
             crosslinker_modmass = 0
-            crosslinker_pair_id = None
+            crosslinker_pair_id_donor = None
+            crosslinker_pair_id_acceptor = None
             crosslinker_accession = None
-
             mod_pos = []
             mod_accessions = []
             mod_avg_masses = []
             mod_monoiso_masses = []
+            # if someone tried to record higher order crosslinks (multiple donors/acceptors) it would break this
             if 'Modification' in peptide.keys():
                 # parse modifications and crosslink info
                 for mod in peptide['Modification']:
                     # crosslink donor
-                    crosslinker_pair_id = cvquery(mod, 'MS:1002509')
-                    if crosslinker_pair_id is not None:
-                        link_site1 = mod['location']
+                    temp = cvquery(mod, 'MS:1002509')
+                    if temp is not None:
+                        crosslinker_pair_id_donor = temp
+                        link_site_donor = mod['location']
                         crosslinker_modmass = mod['monoisotopicMassDelta']
-                        # if mod has key 'name' - it should as consequence of having 'suitably sourced CV param'
+                        # if mod has key 'name' - it should, as consequence of having 'suitably sourced CV param'
                         if 'name' in mod:
                             crosslinker_accession = mod['name'].accession
                         else:
@@ -481,18 +485,41 @@ class MzIdParser:
                             # self.warnings.append(
                             #     f'No accession for crosslinker {crosslinker_pair_id} for peptide {pep_id}')
                     # crosslink acceptor/
-                    if crosslinker_pair_id is None:
-                        crosslinker_pair_id = cvquery(mod, 'MS:1002510')
-                        if crosslinker_pair_id is not None:
-                            link_site1 = mod['location']
-                            crosslinker_modmass = mod['monoisotopicMassDelta']  # should be zero but include anyway
+                    else:
+                        temp = cvquery(mod, 'MS:1002510')
+                        if temp is not None:
+                            crosslinker_pair_id_acceptor = temp
+                            link_site_acc = mod['location']
+                        else:
+                            # no crosslinker modifications
+                            cvs = cvquery(mod)
+                            mod_pos.append(mod['location'])
+                            mod_accessions.append(cvs)  # unit of fragment loss is always daltons
+                            mod_avg_masses.append(mod.get('avgMassDelta', None))
+                            mod_monoiso_masses.append(mod.get('monoisotopicMassDelta', None))
 
-                    if crosslinker_pair_id is None:
-                        cvs = cvquery(mod)
-                        mod_pos.append(mod['location'])
-                        mod_accessions.append(cvs)  # unit of fragment loss is always daltons
-                        mod_avg_masses.append(mod.get('avgMassDelta', None))
-                        mod_monoiso_masses.append(mod.get('monoisotopicMassDelta', None))
+            crosslinker_pair_id = None
+            link_site1 = None
+            link_site2 = None
+            if crosslinker_pair_id_donor is not None and crosslinker_pair_id_acceptor is None:
+                # crosslink donor
+                link_site1 = link_site_donor
+                link_site2 = None
+                crosslinker_pair_id = crosslinker_pair_id_donor
+            elif crosslinker_pair_id_donor is None and crosslinker_pair_id_acceptor is not None:
+                # crosslink acceptor
+                link_site1 = link_site_acc
+                link_site2 = None
+                crosslinker_pair_id = crosslinker_pair_id_acceptor
+            elif crosslinker_pair_id_donor is not None and crosslinker_pair_id_acceptor is not None:
+                if crosslinker_pair_id_donor == crosslinker_pair_id_acceptor:
+                    # loop link
+                    link_site1 = link_site_donor
+                    link_site2 = link_site_acc
+                    crosslinker_pair_id = crosslinker_pair_id_donor
+                else:
+                    raise MzIdParseException(f'Crosslinker pair ids do not match for peptide {pep_id}, higher order '
+                                             f'crosslinks, including multiple looplinks in peptide not supported')
 
             peptide_data = {
                 'id': peptide['id'],
@@ -503,7 +530,7 @@ class MzIdParser:
                 'mod_avg_mass_deltas': mod_avg_masses,
                 'mod_monoiso_mass_deltas': mod_monoiso_masses,
                 'link_site1': link_site1,
-                # 'link_site2': link_site2,  # ToDo: loop link support
+                'link_site2': link_site2,
                 'crosslinker_modmass': crosslinker_modmass,
                 'crosslinker_pair_id': crosslinker_pair_id,
                 'crosslinker_accession': crosslinker_accession
@@ -511,9 +538,9 @@ class MzIdParser:
 
             peptides.append(peptide_data)
 
-            # Batch write 1000 peptides into the DB
-            if peptide_index > 0 and peptide_index % 1000 == 0:
-                self.logger.debug('writing 1000 peptides to DB')
+            # Batch write 500 peptides into the DB
+            if peptide_index > 0 and peptide_index % 500 == 0:
+                self.logger.debug('writing 500 peptides to DB')
                 try:
                     self.writer.write_data('modifiedpeptide', peptides)
                     peptides = []
@@ -559,9 +586,9 @@ class MzIdParser:
 
             pep_evidences.append(pep_ev_data)
 
-            # Batch write 1000 peptide evidences into the DB
-            if len(pep_evidences) % 1000 == 0:
-                self.logger.debug('writing 1000 peptide_evidences to DB')
+            # Batch write 500 peptide evidences into the DB
+            if len(pep_evidences) % 500 == 0:
+                self.logger.debug('writing 500 peptide_evidences to DB')
                 try:
                     self.writer.write_data('peptideevidence', pep_evidences)
                     pep_evidences = []
@@ -626,22 +653,31 @@ class MzIdParser:
                         'retention_time': spectrum.rt
                     })
 
-                spectrum_ident_dict = dict()
+                crosslink_ident_dict = dict()
+                noncov_ident_dict = dict()
+                linear_ident_dict = dict()
                 linear_index = -1  # negative index values for linear peptides
 
                 for spec_id_item in sid_result['SpectrumIdentificationItem']:
                     cvs = cvquery(spec_id_item)
+                    # local_ident_id is the value of crosslink spectrum identifentification item,
+                    # of noncov. assoc. sii or of id made up for linear
                     if 'MS:1002511' in cvs:
                         self.contains_crosslinks = True
-                        crosslink_id = cvs['MS:1002511']
+                        local_ident_id = cvs['MS:1002511']
+                        ident_dict = crosslink_ident_dict
+                    elif 'MS:1003331' in cvs:
+                        local_ident_id = cvs['MS:1003331']
+                        ident_dict = noncov_ident_dict
                     else:  # assuming linear
-                        crosslink_id = linear_index
+                        local_ident_id = linear_index
                         linear_index -= 1
+                        ident_dict = linear_ident_dict
 
                     # check if seen it before
-                    if crosslink_id in spectrum_ident_dict.keys():
+                    if local_ident_id in ident_dict.keys():
                         # do crosslink specific stuff
-                        ident_data = spectrum_ident_dict.get(crosslink_id)
+                        ident_data = ident_dict.get(local_ident_id)
                         ident_data['pep2_id'] = spec_id_item['peptide_ref']
                     else:
                         # do stuff common to linears and crosslinks
@@ -675,13 +711,15 @@ class MzIdParser:
                             'sil_id': sil_id,
                         }
 
-                        spectrum_ident_dict[crosslink_id] = ident_data
+                        ident_dict[local_ident_id] = ident_data
 
-                spectrum_identifications += spectrum_ident_dict.values()
+                spectrum_identifications += linear_ident_dict.values()
+                spectrum_identifications += crosslink_ident_dict.values()
+                spectrum_identifications += noncov_ident_dict.values()
                 spec_count += 1
 
-                if spec_count % 1000 == 0:
-                    self.logger.debug('writing 1000 entries (1000 spectra and their idents) to DB')
+                if spec_count % 500 == 0:
+                    self.logger.debug('writing 500 entries (500 spectra and their idents) to DB')
                     try:
                         if self.peak_list_dir:
                             self.writer.write_data('spectrum', spectra)

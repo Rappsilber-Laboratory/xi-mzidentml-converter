@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy import ForeignKey, Text, FLOAT, JSON, BOOLEAN, Integer, ForeignKeyConstraint
+from sqlalchemy import ForeignKey, Text, FLOAT, JSON, BOOLEAN, Integer, ForeignKeyConstraint, CHAR
 from models.base import Base
 from typing import Optional, Any
 
@@ -12,6 +12,7 @@ class Match(Base):
     spectrum_id: Mapped[str] = mapped_column(Text, nullable=True)
     spectra_data_ref: Mapped[str] = mapped_column(Text, nullable=True)
     multiple_spectra_identification_id: Mapped[str] = mapped_column(Integer, nullable=True)
+    multiple_spectra_identification_pc: Mapped[str] = mapped_column(CHAR, nullable=True)
     pep1_id: Mapped[str] = mapped_column(Text, nullable=False)
     pep2_id: Mapped[str] = mapped_column(Text, nullable=True)
     charge_state: Mapped[int] = mapped_column(Integer, nullable=True)

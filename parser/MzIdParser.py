@@ -611,6 +611,8 @@ class MzIdParser:
         main_loop_start_time = time()
         self.logger.info('main loop - start')
 
+        msi_regex = re.compile(r'^([0-9]+)(?::(P|C))$')
+
         spec_count = 0
         spectra = []
         spectrum_identifications = []
@@ -695,6 +697,14 @@ class MzIdParser:
                         if 'calculatedMassToCharge' in spec_id_item.keys():
                             calculated_mass_to_charge = float(spec_id_item['calculatedMassToCharge'])
 
+                        msi_id = None
+                        msi_pc = None
+                        if 'MS:1003332' in cvs:
+                            msi = cvs['MS:1003332']
+                            m = msi_regex.match(msi)
+                            msi_id = m[1]
+                            msi_pc = m[2]
+
                         ident_data = {
                             'id': spec_id_item['id'],
                             'upload_id': self.writer.upload_id,
@@ -709,6 +719,8 @@ class MzIdParser:
                             'exp_mz': spec_id_item['experimentalMassToCharge'],
                             'calc_mz': calculated_mass_to_charge,
                             'sil_id': sil_id,
+                            'multiple_spectra_identification_id': msi_id,
+                            'multiple_spectra_identification_pc': msi_pc,
                         }
 
                         ident_dict[local_ident_id] = ident_data

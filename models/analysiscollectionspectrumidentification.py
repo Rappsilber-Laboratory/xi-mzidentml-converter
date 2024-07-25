@@ -1,7 +1,6 @@
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy import ForeignKey, Text, ForeignKeyConstraint, Integer, Any, JSON
 from models.base import Base
-from models.match import Match
 
 
 class AnalysisCollectionSpectrumIdentification(Base):

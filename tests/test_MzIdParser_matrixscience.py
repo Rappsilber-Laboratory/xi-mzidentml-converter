@@ -77,7 +77,7 @@ def compare_modified_peptide(results):
     assert results[284].mod_positions == [7, 21]
     assert results[284].link_site1 == 3  # location of <Modification> with cross-link acceptor/receiver cvParam
     assert results[284].crosslinker_modmass == -2.01565  # monoisotopicMassDelta of Modification with crosslink cvParam
-    assert results[284].crosslinker_pair_id == '37.0' # value of cross-link acceptor/receiver cvParam
+    assert results[284].crosslinker_pair_id == '37.0'  # value of cross-link acceptor/receiver cvParam
     assert results[284].crosslinker_accession == 'UNIMOD:'  # the file has
 
     assert results[285].id == 'peptide_1497_2_p2'  # id from <Peptide> id

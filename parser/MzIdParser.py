@@ -480,8 +480,8 @@ class MzIdParser:
         peptides = []
         for pep_id in self.mzid_reader._offset_index["Peptide"].keys():
             peptide = self.mzid_reader.get_by_id(pep_id, tag_id='Peptide')
-            donor_link_site = None
-            acc_link_site = None
+            link_site_donor = None
+            link_site_acc = None
             crosslinker_modmass = 0
             crosslinker_pair_id_donor = None
             crosslinker_pair_id_acceptor = None

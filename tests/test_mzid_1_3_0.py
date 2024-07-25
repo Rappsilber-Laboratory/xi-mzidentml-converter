@@ -42,28 +42,28 @@ def test_psql_multi_spectra_mzid_parser(tmpdir, db_info, use_database, engine):
 
         assert results[2].id == 'MS3_SII_0'
         assert results[2].pep1_id == 'p1_a'
-        assert results[2].pep2_id == None
+        assert results[2].pep2_id is None
         assert results[2].multiple_spectra_identification_id == 1234
         assert results[2].multiple_spectra_identification_pc == 'C'
         assert results[2].sil_id == 'sil_MS3'
 
         assert results[3].id == 'MS3_SII_1'
         assert results[3].pep1_id == 'p2_t'
-        assert results[3].pep2_id == None
+        assert results[3].pep2_id is None
         assert results[3].multiple_spectra_identification_id == 1234
         assert results[3].multiple_spectra_identification_pc == 'C'
         assert results[3].sil_id == 'sil_MS3'
 
         assert results[4].id == 'MS3_SII_2'
         assert results[4].pep1_id == 'p1_t'
-        assert results[4].pep2_id == None
+        assert results[4].pep2_id is None
         assert results[4].multiple_spectra_identification_id == 1234
         assert results[4].multiple_spectra_identification_pc == 'C'
         assert results[4].sil_id == 'sil_MS3'
 
         assert results[5].id == 'MS3_SII_3'
         assert results[5].pep1_id == 'p2_a'
-        assert results[5].pep2_id == None
+        assert results[5].pep2_id is None
         assert results[5].multiple_spectra_identification_id == 1234
         assert results[5].multiple_spectra_identification_pc == 'C'
         assert results[5].sil_id == 'sil_MS3'
@@ -91,7 +91,7 @@ def test_psql_looplink_mzid_parser(tmpdir, db_info, use_database, engine):
 
         assert results[0].id == 'SII_7_1'
         assert results[0].pep1_id == 'peptide_7_1'
-        assert results[0].pep2_id == None
+        assert results[0].pep2_id is None
 
         t = Table("modifiedpeptide", id_parser.writer.meta, autoload_with=id_parser.writer.engine,
                   quote=False)
@@ -116,7 +116,7 @@ def test_psql_looplink_mzid_parser(tmpdir, db_info, use_database, engine):
     engine.dispose()
 
 
-def test_psql_looplink_mzid_parser(tmpdir, db_info, use_database, engine):
+def test_psql_noncov_mzid_parser(tmpdir, db_info, use_database, engine):
     # file paths
     fixtures_dir = os.path.join(os.path.dirname(__file__), 'fixtures', 'mzid_parser', '1.3.0')
     mzid = os.path.join(fixtures_dir, 'noncovalently_assoc_1_3_0_draft.mzid')
@@ -154,11 +154,11 @@ def test_psql_looplink_mzid_parser(tmpdir, db_info, use_database, engine):
         assert results[0].mod_avg_mass_deltas == [None, None, None]
         assert results[0].mod_monoiso_mass_deltas == [15.99491, 57.02147, 57.02147]
         assert results[0].mod_positions == [5, 13, 15]
-        assert results[0].link_site1 == None
-        assert results[0].link_site2 == None
+        assert results[0].link_site1 is None
+        assert results[0].link_site2 is None
         assert results[0].crosslinker_modmass == 0.0
-        assert results[0].crosslinker_pair_id == None
-        assert results[0].crosslinker_accession == None
+        assert results[0].crosslinker_pair_id is None
+        assert results[0].crosslinker_accession is None
 
         t = Table("modifiedpeptide", id_parser.writer.meta, autoload_with=id_parser.writer.engine,
                   quote=False)
@@ -176,10 +176,10 @@ def test_psql_looplink_mzid_parser(tmpdir, db_info, use_database, engine):
         assert results[0].mod_avg_mass_deltas == [None, None, None]
         assert results[0].mod_monoiso_mass_deltas == [57.02147, 57.02147, 57.02147]
         assert results[0].mod_positions == [5, 6, 13]
-        assert results[0].link_site1 == None
-        assert results[0].link_site2 == None
+        assert results[0].link_site1 is None
+        assert results[0].link_site2 is None
         assert results[0].crosslinker_modmass == 0.0
-        assert results[0].crosslinker_pair_id == None
-        assert results[0].crosslinker_accession == None
+        assert results[0].crosslinker_pair_id is None
+        assert results[0].crosslinker_accession is None
 
     engine.dispose()

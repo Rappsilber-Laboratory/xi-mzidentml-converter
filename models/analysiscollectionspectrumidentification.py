@@ -1,6 +1,7 @@
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import ForeignKey, Text, ForeignKeyConstraint, Integer, Any, JSON
 from models.base import Base
+from models.match import Match
 
 
 class AnalysisCollectionSpectrumIdentification(Base):
@@ -14,9 +15,15 @@ class AnalysisCollectionSpectrumIdentification(Base):
     spectrum_identification_list_ref: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
     spectrum_identification_protocol_ref: Mapped[str] = mapped_column(Text, primary_key=False, nullable=False)
     spectrum_identification_id: Mapped[str] = mapped_column(Text, primary_key=False, nullable=False)
+    # # actvity date as time ?
+    # activity_date:
+    # # name ?
+    # name:
     spectra_data_refs: Mapped[dict[str, Any]] = mapped_column(JSON, primary_key=False, nullable=True)
     search_database_refs: Mapped[dict[str, Any]] = mapped_column(JSON, primary_key=False, nullable=True)
-    ForeignKeyConstraint(
-        ["spectrum_identification_protocol_ref", "upload_id"],
-        ["spectrumidentificationprotocol.id", "spectrumidentificationprotocol.upload_id"],
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["spectrum_identification_protocol_ref", "upload_id"],
+            ["spectrumidentificationprotocol.sip_ref", "spectrumidentificationprotocol.upload_id"],
+        ),
     )

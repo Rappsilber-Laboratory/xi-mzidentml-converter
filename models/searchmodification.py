@@ -16,7 +16,9 @@ class SearchModification(Base):
     fixed_mod: Mapped[bool] = mapped_column(BOOLEAN, nullable=False)
     accession: Mapped[str] = mapped_column(Text, nullable=True)
     crosslinker_id: Mapped[str] = mapped_column(Text, nullable=True)
-    ForeignKeyConstraint(
-        ("protocol_id", "upload_id"),
-        ("spectrumidentificationprotocol.id", "spectrumidentificationprotocol.upload_id"),
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ("protocol_id", "upload_id"),
+            ("spectrumidentificationprotocol.sip_ref", "spectrumidentificationprotocol.upload_id"),
+        ),
     )

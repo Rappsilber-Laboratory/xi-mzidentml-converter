@@ -16,7 +16,9 @@ class Enzyme(Base):
     semi_specific: Mapped[bool] = mapped_column(BOOLEAN, nullable=True)
     site_regexp: Mapped[str] = mapped_column(Text, nullable=True)
     accession: Mapped[str] = mapped_column(Text, nullable=True)
-    ForeignKeyConstraint(
-        ("protocol_id", "upload_id"),
-        ("spectrumidentificationprotocol.id", "spectrumidentificationprotocol.upload_id"),
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ("protocol_id", "upload_id"),
+            ("spectrumidentificationprotocol.sip_ref", "spectrumidentificationprotocol.upload_id"),
+        ),
     )

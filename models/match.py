@@ -1,4 +1,4 @@
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import ForeignKey, Text, FLOAT, JSON, BOOLEAN, Integer, ForeignKeyConstraint, CHAR
 from models.base import Base
 from typing import Optional, Any
@@ -10,7 +10,7 @@ class Match(Base):
     upload_id: Mapped[int] = mapped_column(Integer, ForeignKey("upload.id"), index=True, primary_key=True,
                                            nullable=False)
     spectrum_id: Mapped[str] = mapped_column(Text, nullable=True)
-    spectra_data_ref: Mapped[str] = mapped_column(Text, nullable=True)
+    spectra_data_id: Mapped[int] = mapped_column(Integer, nullable=True) #  nullable for csv data
     multiple_spectra_identification_id: Mapped[str] = mapped_column(Integer, nullable=True)
     multiple_spectra_identification_pc: Mapped[str] = mapped_column(CHAR, nullable=True)
     pep1_id: Mapped[str] = mapped_column(Text, nullable=False)
@@ -22,22 +22,25 @@ class Match(Base):
     exp_mz: Mapped[float] = mapped_column(FLOAT, nullable=True)
     calc_mz: Mapped[float] = mapped_column(FLOAT, nullable=True)
     sil_id: Mapped[str] = mapped_column(Text, nullable=True)  # null if from csv file
-    ForeignKeyConstraint(
-        ["sil_id", "upload_id"],
-        ["analysiscollectionspectrumidentification.spectrum_identification_list_ref",
-         "analysiscollectionspectrumidentification.upload_id"],
-    ),
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["sil_id", "upload_id"],
+            ["analysiscollectionspectrumidentification.spectrum_identification_list_ref",
+             "analysiscollectionspectrumidentification.upload_id"],
+        ),
+        ForeignKeyConstraint(
+            ["pep1_id", "upload_id"],
+            ["modifiedpeptide.id", "modifiedpeptide.upload_id"],
+        ),
+        ForeignKeyConstraint(
+            ["pep2_id", "upload_id"],
+            ["modifiedpeptide.id", "modifiedpeptide.upload_id"],
+        )
+    )
+
     # Can't use this ForeignKeyConstraint, because we want to allow people to upload data
     # without spectra
     # ForeignKeyConstraint(
     #     ["spectrum_id", "spectra_data_ref", "upload_id"],
     #     ["Spectrum.id", "Spectrum.spectra_data_ref", "Spectrum.upload_id"],
     # ),
-    ForeignKeyConstraint(
-        ["pep1_id", "upload_id"],
-        ["modifiedpeptide.id", "modifiedpeptide.upload_id"],
-    ),
-    ForeignKeyConstraint(
-        ["pep2_id", "upload_id"],
-        ["modifiedpeptide.id", "modifiedpeptide.upload_id"],
-    )

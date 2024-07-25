@@ -43,6 +43,7 @@ class MzIdParser:
         self.mzid_path = mzid_path
 
         self.peak_list_readers = {}  # peak list readers indexed by spectraData_ref
+        self.spectra_data_id_lookup = {}  # spectra_data_ref to spectra_data_id lookup
         self.temp_dir = temp_dir
         if not self.temp_dir.endswith('/'):
             self.temp_dir += '/'
@@ -81,8 +82,7 @@ class MzIdParser:
         start_time = time()
         self.upload_info()  # overridden (empty function) in xiSPEC subclass
         self.parse_analysis_protocol_collection()
-        if self.peak_list_dir:
-            self.init_peak_list_readers()
+        self.parse_spectradata_and_init_peak_list_readers()
         self.parse_analysis_collection()
         self.parse_db_sequences()  # overridden (empty function) in xiSPEC subclass
         self.parse_peptides()
@@ -117,7 +117,7 @@ class MzIdParser:
         if 'location' not in sp_datum or sp_datum['location'] is None:
             raise MzIdParseException('SpectraData is missing location')
 
-    def init_peak_list_readers(self):
+    def parse_spectradata_and_init_peak_list_readers(self):
         """
         Sets self.peak_list_readers by looping through SpectraData elements
 
@@ -126,53 +126,76 @@ class MzIdParser:
             value: associated peak_list_reader
         """
         peak_list_readers = {}
+        spectra_data = []
+        spectra_data_id_lookup = {}
+        sd_int_id = 0
         for spectra_data_id in self.mzid_reader._offset_index["SpectraData"].keys():
             sp_datum = self.mzid_reader.get_by_id(spectra_data_id, tag_id='SpectraData')
 
             self.check_spectra_data_validity(sp_datum)
 
-            sd_id = sp_datum['id']
             peak_list_file_name = ntpath.basename(sp_datum['location'])
-            peak_list_file_path = self.peak_list_dir + peak_list_file_name
+            file_format = sp_datum['FileFormat'].accession
+            spectrum_id_format = sp_datum['SpectrumIDFormat'].accession
 
-            # noinspection PyBroadException
-            try:
-                peak_list_reader = PeakListWrapper(
-                    peak_list_file_path,
-                    sp_datum['FileFormat'].accession,
-                    sp_datum['SpectrumIDFormat'].accession
-                )
-            # ToDo: gz/zip code parts could do with refactoring
-            except Exception:
-                # try gz version
+            if self.peak_list_dir:
+                peak_list_file_path = self.peak_list_dir + peak_list_file_name
+                # noinspection PyBroadException
                 try:
                     peak_list_reader = PeakListWrapper(
-                        PeakListWrapper.extract_gz(peak_list_file_path + '.gz'),
-                        sp_datum['FileFormat'].accession,
-                        sp_datum['SpectrumIDFormat'].accession
+                        peak_list_file_path,
+                        file_format,
+                        spectrum_id_format
                     )
-                except IOError:
-                    # look for missing peak lists in zip files
-                    for file in os.listdir(self.peak_list_dir):
-                        if file.endswith(".zip"):
-                            zip_file = os.path.join(self.peak_list_dir, file)
-                            try:
-                                with zipfile.ZipFile(zip_file, 'r') as zip_ref:
-                                    zip_ref.extractall(self.peak_list_dir)
-                            except IOError:
-                                raise IOError()
+                # ToDo: gz/zip code parts could do with refactoring
+                except Exception:
+                    # try gz version
                     try:
                         peak_list_reader = PeakListWrapper(
-                            peak_list_file_path,
-                            sp_datum['FileFormat'].accession,
-                            sp_datum['SpectrumIDFormat'].accession
+                            PeakListWrapper.extract_gz(peak_list_file_path + '.gz'),
+                            file_format,
+                            spectrum_id_format
                         )
-                    except Exception:
-                        raise MzIdParseException('Missing peak list file: %s' % peak_list_file_path)
+                    except IOError:
+                        # look for missing peak lists in zip files
+                        for file in os.listdir(self.peak_list_dir):
+                            if file.endswith(".zip"):
+                                zip_file = os.path.join(self.peak_list_dir, file)
+                                try:
+                                    with zipfile.ZipFile(zip_file, 'r') as zip_ref:
+                                        zip_ref.extractall(self.peak_list_dir)
+                                except IOError:
+                                    raise IOError()
+                        try:
+                            peak_list_reader = PeakListWrapper(
+                                peak_list_file_path,
+                                file_format,
+                                spectrum_id_format
+                            )
+                        except Exception:
+                            raise MzIdParseException('Missing peak list file: %s' % peak_list_file_path)
 
-            peak_list_readers[sd_id] = peak_list_reader
+                peak_list_readers[spectra_data_id] = peak_list_reader
+
+            spectra_datum = {
+                'id': sd_int_id,
+                'upload_id': self.writer.upload_id,
+                'spectra_data_ref': spectra_data_id,
+                'location': sp_datum['location'],
+                'name': sp_datum.get('name', None),
+                'external_format_documentation': sp_datum.get('externalFormatDocumentation', None),
+                'file_format': file_format,
+                'spectrum_id_format': spectrum_id_format
+            }
+
+            spectra_data.append(spectra_datum)
+            spectra_data_id_lookup[spectra_data_id] = sd_int_id
+            sd_int_id += 1
+
+        self.writer.write_data('spectradata', spectra_data)
 
         self.peak_list_readers = peak_list_readers
+        self.spectra_data_id_lookup = spectra_data_id_lookup
 
     def parse_analysis_protocol_collection(self):
         """Parse the AnalysisProtocolCollection and write SpectrumIdentificationProtocols."""
@@ -182,6 +205,7 @@ class MzIdParser:
         sid_protocols = []
         search_modifications = []
         enzymes = []
+        sip_int_id = 0
         for sid_protocol_id in self.mzid_reader._offset_index['SpectrumIdentificationProtocol'].keys():
             try:
                 sid_protocol = self.mzid_reader.get_by_id(sid_protocol_id, detailed=True)
@@ -228,8 +252,9 @@ class MzIdParser:
             # Threshold
             threshold = sid_protocol.get('Threshold', {})
             data = {
-                'id': sid_protocol['id'],
+                'id': sip_int_id,
                 'upload_id': self.writer.upload_id,
+                'sip_ref': sid_protocol['id'],
                 'search_type': sid_protocol['SearchType'],
                 'frag_tol': frag_tol_value,
                 'frag_tol_unit': frag_tol_unit,
@@ -360,6 +385,7 @@ class MzIdParser:
                     })
 
             sid_protocols.append(data)
+            sip_int_id += 1
 
         self.mzid_reader.reset()
         self.logger.info('parsing AnalysisProtocolCollection - done. Time: {} sec'.format(
@@ -453,8 +479,6 @@ class MzIdParser:
         peptide_index = 0
         peptides = []
         for pep_id in self.mzid_reader._offset_index["Peptide"].keys():
-            if pep_id == 'peptide_1497_2_p1':
-                pass
             peptide = self.mzid_reader.get_by_id(pep_id, tag_id='Peptide')
             donor_link_site = None
             acc_link_site = None
@@ -705,11 +729,12 @@ class MzIdParser:
                             msi_id = m[1]
                             msi_pc = m[2]
 
+                        sd_int_id = self.spectra_data_id_lookup[sid_result['spectraData_ref']]
                         ident_data = {
                             'id': spec_id_item['id'],
                             'upload_id': self.writer.upload_id,
                             'spectrum_id': sid_result['spectrumID'],
-                            'spectra_data_ref': sid_result['spectraData_ref'],
+                            'spectra_data_id': sd_int_id,
                             'pep1_id': spec_id_item['peptide_ref'],
                             'pep2_id': None,
                             'charge_state': int(spec_id_item['chargeState']),

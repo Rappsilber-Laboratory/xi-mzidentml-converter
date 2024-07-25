@@ -388,8 +388,9 @@ def test_psql_mgf_mzid_parser(tmpdir, use_database, engine):
         assert results[0].id == 'SII_3_1'  # id from first <SpectrumIdentificationItem>
         assert results[0].spectrum_id == 'index=3'  # spectrumID from <SpectrumIdentificationResult>
         # spectraData_ref from <SpectrumIdentificationResult>
-        assert results[0].spectra_data_ref == \
-               'SD_0_recal_B190717_13_HF_LS_IN_130_ECLP_DSSO_01_SCX23_hSAX05_rep2.mgf'
+        # assert results[0].spectra_data_ref == \
+        #        'SD_0_recal_B190717_13_HF_LS_IN_130_ECLP_DSSO_01_SCX23_hSAX05_rep2.mgf'
+        assert results[0].spectra_data_id == 1
         # peptide_ref from <SpectrumIdentificationItem>
         assert results[0].pep1_id == \
                '6_VAEmetETPHLIHKVALDPLTGPMPYQGR_11_MGHAGAIIAGGKGTADEK_11_12_p1'
@@ -1152,8 +1153,9 @@ def test_psql_mzml_mzid_parser(tmpdir, use_database, engine):
         # spectrumID from <SpectrumIdentificationResult>
         assert results[0].spectrum_id == 'controllerType=0 controllerNumber=1 scan=14905'
         # spectraData_ref from <SpectrumIdentificationResult>
-        assert results[0].spectra_data_ref == \
-               'SD_0_recal_B190717_13_HF_LS_IN_130_ECLP_DSSO_01_SCX23_hSAX05_rep2.mzML'
+        # assert results[0].spectra_data_ref == \
+        #        'SD_0_recal_B190717_13_HF_LS_IN_130_ECLP_DSSO_01_SCX23_hSAX05_rep2.mzML'
+        assert results[0].spectra_data_id == 1
         # peptide_ref from <SpectrumIdentificationItem>
         assert results[0].pep1_id == \
                '6_VAEmetETPHLIHKVALDPLTGPMPYQGR_11_MGHAGAIIAGGKGTADEK_11_12_p1'

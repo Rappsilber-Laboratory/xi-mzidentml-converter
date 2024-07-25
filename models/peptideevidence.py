@@ -11,11 +11,13 @@ class PeptideEvidence(Base):
     dbsequence_ref: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
     pep_start: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
     is_decoy: Mapped[bool] = mapped_column(BOOLEAN, nullable=True)
-    ForeignKeyConstraint(
-        ("dbsequence_ref", "upload_id"),
-        ("dbsequence.id", "dbsequence.upload_id"),
-    )
-    ForeignKeyConstraint(
-        ("peptide_ref", "upload_id"),
-        ("modifiedpeptide.id", "modifiedpeptide.upload_id"),
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ("dbsequence_ref", "upload_id"),
+            ("dbsequence.id", "dbsequence.upload_id"),
+        ),
+        ForeignKeyConstraint(
+            ("peptide_ref", "upload_id"),
+            ("modifiedpeptide.id", "modifiedpeptide.upload_id"),
+        )
     )

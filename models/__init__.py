@@ -8,13 +8,14 @@ __all__ = [
     "base",
     "dbsequence",
     "enzyme",
+    "match",
     "modifiedpeptide",
     "peptideevidence",
     "projectdetail",
     "projectsubdetail",
     "searchmodification",
+    "spectradata",
     "spectrum",
-    "match",
     "spectrumidentificationprotocol",
     "upload"
 ]

@@ -19,6 +19,6 @@ class SearchModification(Base):
     __table_args__ = (
         ForeignKeyConstraint(
             ("protocol_id", "upload_id"),
-            ("spectrumidentificationprotocol.id", "spectrumidentificationprotocol.upload_id"),
+            ("spectrumidentificationprotocol.sip_ref", "spectrumidentificationprotocol.upload_id"),
         ),
     )

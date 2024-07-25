@@ -205,6 +205,7 @@ class MzIdParser:
         sid_protocols = []
         search_modifications = []
         enzymes = []
+        sip_int_id = 0
         for sid_protocol_id in self.mzid_reader._offset_index['SpectrumIdentificationProtocol'].keys():
             try:
                 sid_protocol = self.mzid_reader.get_by_id(sid_protocol_id, detailed=True)
@@ -251,8 +252,9 @@ class MzIdParser:
             # Threshold
             threshold = sid_protocol.get('Threshold', {})
             data = {
-                'id': sid_protocol['id'],
+                'id': sip_int_id,
                 'upload_id': self.writer.upload_id,
+                'sip_ref': sid_protocol['id'],
                 'search_type': sid_protocol['SearchType'],
                 'frag_tol': frag_tol_value,
                 'frag_tol_unit': frag_tol_unit,
@@ -383,6 +385,7 @@ class MzIdParser:
                     })
 
             sid_protocols.append(data)
+            sip_int_id += 1
 
         self.mzid_reader.reset()
         self.logger.info('parsing AnalysisProtocolCollection - done. Time: {} sec'.format(

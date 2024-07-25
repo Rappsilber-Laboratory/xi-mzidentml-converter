@@ -254,7 +254,8 @@ def compare_enzyme(results):
 def compare_spectrum_identification_protocol(results):
     assert len(results) == 1
     # parsed from <FragmentTolerance> in <SpectrumIdentificationProtocol>
-    assert results[0].id == 'SearchProtocol_1_0'  # id from <SpectrumIdentificationProtocol>
+    assert results[0].id == 0
+    assert results[0].sip_ref == 'SearchProtocol_1_0'  # id from <SpectrumIdentificationProtocol>
     assert results[0].frag_tol == 5.0
     assert results[0].frag_tol_unit == 'ppm'
     # cvParams from <AdditionalSearchParams> 'ion series considered in search' (MS:1002473)

@@ -24,6 +24,6 @@ class AnalysisCollectionSpectrumIdentification(Base):
     __table_args__ = (
         ForeignKeyConstraint(
             ["spectrum_identification_protocol_ref", "upload_id"],
-            ["spectrumidentificationprotocol.id", "spectrumidentificationprotocol.upload_id"],
+            ["spectrumidentificationprotocol.sip_ref", "spectrumidentificationprotocol.upload_id"],
         ),
     )

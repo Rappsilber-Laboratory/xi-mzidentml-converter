@@ -44,6 +44,8 @@ class MzIdParser:
 
         self.peak_list_readers = {}  # peak list readers indexed by spectraData_ref
         self.spectra_data_id_lookup = {}  # spectra_data_ref to spectra_data_id lookup
+        self.sip_ref_to_sip_id_lookup = {}  # sip_ref to sip_id lookup
+        self.sil_ref_to_protocol_id_lookup = {}  # sip_ref to sip_id lookup
         self.temp_dir = temp_dir
         if not self.temp_dir.endswith('/'):
             self.temp_dir += '/'
@@ -385,6 +387,7 @@ class MzIdParser:
                     })
 
             sid_protocols.append(data)
+            self.sip_ref_to_sip_id_lookup[sid_protocol['id']] = sip_int_id
             sip_int_id += 1
 
         self.mzid_reader.reset()
@@ -421,7 +424,7 @@ class MzIdParser:
                 'search_database_refs': search_database_refs
             }
             spectrum_identification.append(si_data)
-
+            self.sil_ref_to_protocol_id_lookup[si['spectrumIdentificationList_ref']] = self.sip_ref_to_sip_id_lookup[si['spectrumIdentificationProtocol_ref']]
         self.mzid_reader.reset()
         self.logger.info('parsing AnalysisCollection - done. Time: {} sec'.format(
             round(time() - start_time, 2)))
@@ -743,7 +746,7 @@ class MzIdParser:
                             'scores': psm_level_stats,
                             'exp_mz': spec_id_item['experimentalMassToCharge'],
                             'calc_mz': calculated_mass_to_charge,
-                            'sil_id': sil_id,
+                            'sip_id': self.sil_ref_to_protocol_id_lookup[sil_id],
                             'multiple_spectra_identification_id': msi_id,
                             'multiple_spectra_identification_pc': msi_pc,
                         }

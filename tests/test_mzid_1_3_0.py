@@ -31,42 +31,42 @@ def test_psql_multi_spectra_mzid_parser(tmpdir, db_info, use_database, engine):
         assert results[0].pep2_id == 'p2'
         assert results[0].multiple_spectra_identification_id == 1234
         assert results[0].multiple_spectra_identification_pc == 'P'
-        assert results[0].sil_id == 'sil_HCD'
+        assert results[0].sip_id == 0 #  'sil_HCD'
 
         assert results[1].id == 'ETD_SII_0'
         assert results[1].pep1_id == 'p1'
         assert results[1].pep2_id == 'p2'
         assert results[1].multiple_spectra_identification_id == 1234
         assert results[1].multiple_spectra_identification_pc == 'P'
-        assert results[1].sil_id == 'sil_ETD'
+        assert results[1].sip_id == 1 #  'sil_ETD'
 
         assert results[2].id == 'MS3_SII_0'
         assert results[2].pep1_id == 'p1_a'
         assert results[2].pep2_id is None
         assert results[2].multiple_spectra_identification_id == 1234
         assert results[2].multiple_spectra_identification_pc == 'C'
-        assert results[2].sil_id == 'sil_MS3'
+        assert results[2].sip_id == 2 # 'sil_MS3'
 
         assert results[3].id == 'MS3_SII_1'
         assert results[3].pep1_id == 'p2_t'
         assert results[3].pep2_id is None
         assert results[3].multiple_spectra_identification_id == 1234
         assert results[3].multiple_spectra_identification_pc == 'C'
-        assert results[3].sil_id == 'sil_MS3'
+        assert results[3].sip_id == 2 # 'sil_MS3'
 
         assert results[4].id == 'MS3_SII_2'
         assert results[4].pep1_id == 'p1_t'
         assert results[4].pep2_id is None
         assert results[4].multiple_spectra_identification_id == 1234
         assert results[4].multiple_spectra_identification_pc == 'C'
-        assert results[4].sil_id == 'sil_MS3'
+        assert results[4].sip_id == 2 # 'sil_MS3'
 
         assert results[5].id == 'MS3_SII_3'
         assert results[5].pep1_id == 'p2_a'
         assert results[5].pep2_id is None
         assert results[5].multiple_spectra_identification_id == 1234
         assert results[5].multiple_spectra_identification_pc == 'C'
-        assert results[5].sil_id == 'sil_MS3'
+        assert results[5].sip_id == 2 # 'sil_MS3'
 
     engine.dispose()
 

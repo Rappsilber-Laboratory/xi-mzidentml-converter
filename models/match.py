@@ -21,12 +21,12 @@ class Match(Base):
     scores: Mapped[Optional[dict[str, Any]]] = mapped_column(JSON, nullable=True)
     exp_mz: Mapped[float] = mapped_column(FLOAT, nullable=True)
     calc_mz: Mapped[float] = mapped_column(FLOAT, nullable=True)
-    sil_id: Mapped[str] = mapped_column(Text, nullable=True)  # null if from csv file
+    sip_id: Mapped[int] = mapped_column(Integer, nullable=True)  # null if from csv file
     __table_args__ = (
         ForeignKeyConstraint(
-            ["sil_id", "upload_id"],
-            ["analysiscollectionspectrumidentification.spectrum_identification_list_ref",
-             "analysiscollectionspectrumidentification.upload_id"],
+            ["sip_id", "upload_id"],
+            ["spectrumidentificationprotocol.id",
+             "spectrumidentificationprotocol.upload_id"],
         ),
         ForeignKeyConstraint(
             ["pep1_id", "upload_id"],

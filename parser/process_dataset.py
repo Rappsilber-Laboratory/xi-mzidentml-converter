@@ -2,7 +2,6 @@ import argparse
 import sys
 import os
 import socket
-import traceback
 
 import requests
 import time
@@ -14,9 +13,9 @@ from urllib.parse import urlparse
 
 from parser.MzIdParser import MzIdParser
 import logging.config
-from parser.api_writer import APIWriter
+from parser.APIWriter import APIWriter
 from config.config_parser import get_conn_str
-from parser.database_writer import DatabaseWriter
+from parser.DatabaseWriter import DatabaseWriter
 
 logging_config_file = os.path.join(os.path.dirname(__file__), '../config/logging.ini')
 logging.config.fileConfig(logging_config_file)
@@ -41,7 +40,7 @@ def main():
     parser.add_argument('-n', '--nopeaklist',
                         help='No peak list files available, only works in comination with --dir arg',
                         action='store_true')
-    parser.add_argument('-w', '--writer', help='Save data to database(-w db) or API(-w api)')
+    parser.add_argument('-w', '--writer', help='Save data to database(-w db) or API(-w api), required.', required=True)
     args = parser.parse_args()
     try:
         logger.info("process_dataset.py is running!")
@@ -51,10 +50,9 @@ def main():
         else:
             temp_dir = os.path.expanduser('~/mzId_convertor_temp')
 
-        if args.writer:
-            writer_method = args.writer
-            if not (writer_method.lower() == 'api' or writer_method.lower() == 'db'):
-                raise ValueError('Writer method not supported! please use "api" or "database"')
+        writer_method = args.writer
+        if not (writer_method.lower() == 'api' or writer_method.lower() == 'db'):
+            raise ValueError('Writer method not supported! please use "api" or "db"')
 
         if args.pxid:
             px_accessions = args.pxid
@@ -79,7 +77,6 @@ def main():
         sys.exit(0)
     except Exception as ex:
         logger.error(ex)
-        traceback.print_stack(ex)
         sys.exit(1)
 
 
@@ -134,8 +131,8 @@ def convert_pxd_accession_from_pride(px_accession, temp_dir, writer_method, dont
                     ftp_url = parent_folder
 
                     logger.info('PRIDE FTP path : ' + parent_folder)
-                    break;
-        convert_from_ftp(ftp_url, temp_dir, px_accession,writer_method, dont_delete)
+                    break
+        convert_from_ftp(ftp_url, temp_dir, px_accession, writer_method, dont_delete)
         if not ftp_url:
             raise Exception('Error: Public File location not found in PRIDE API response')
     else:
@@ -163,18 +160,18 @@ def convert_from_ftp(ftp_url, temp_dir, project_identifier, writer_method, dont_
     files = get_ftp_file_list(ftp_ip, parsed_url.path)
     for f in files:
         # check file not already in temp dir
-        if not (os.path.isfile(os.path.join(path, f))
+        if not (os.path.isfile(os.path.join(str(path), f))
                 or f.lower == "generated"  # dunno what these files are but they seem to make ftp break
                 or f.lower().endswith('raw')
                 or f.lower().endswith('raw.gz')
                 or f.lower().endswith('all.zip')
                 or f.lower().endswith('csv')
                 or f.lower().endswith('txt')):
-            logger.info('Downloading ' + f + ' to ' + path)
+            logger.info('Downloading ' + f + ' to ' + str(path))
             ftp = get_ftp_login(ftp_ip)
             try:
                 ftp.cwd(parsed_url.path)
-                ftp.retrbinary("RETR " + f, open(os.path.join(path, f), 'wb').write)
+                ftp.retrbinary("RETR " + f, open(os.path.join(str(path), f), 'wb').write)
                 ftp.quit()
             except ftplib.error_perm as e:
                 ftp.quit()
@@ -187,7 +184,7 @@ def convert_from_ftp(ftp_url, temp_dir, project_identifier, writer_method, dont_
         try:
             shutil.rmtree(path)
         except OSError as e:
-            logger.error('Failed to delete temp directory ' + path)
+            logger.error('Failed to delete temp directory ' + str(path))
             logger.error('Error: ' + e.strerror)
             raise e
 
@@ -225,7 +222,7 @@ def get_ftp_file_list(ftp_ip, ftp_dir):
     return filelist
 
 
-def convert_dir(local_dir, project_identifier,writer_method, nopeaklist=False):
+def convert_dir(local_dir, project_identifier, writer_method, nopeaklist=False):
     # logging.basicConfig(level=logging.DEBUG,
     #                     format='%(asctime)s %(levelname)s %(name)s %(message)s')
     # logger = logging.getLogger(__name__)
@@ -236,8 +233,8 @@ def convert_dir(local_dir, project_identifier,writer_method, nopeaklist=False):
             logger.info("Processing " + file)
             conn_str = get_conn_str()
             if writer_method.lower() == 'api':
-                writer = APIWriter(conn_str, pxid=project_identifier)
-            elif writer_method.lower() == 'db':
+                writer = APIWriter(pxid=project_identifier)
+            else:
                 writer = DatabaseWriter(conn_str, pxid=project_identifier)
             id_parser = MzIdParser(os.path.join(local_dir, file), local_dir, peaklist_dir, writer, logger)
             try:
@@ -253,4 +250,4 @@ def convert_dir(local_dir, project_identifier,writer_method, nopeaklist=False):
 
 
 if __name__ == "__main__":
-   main()
+    main()

@@ -10,7 +10,7 @@ with open("README.md", encoding="UTF-8") as fh:
 
 def read(rel_path):
     here = os.path.abspath(os.path.dirname(__file__))
-    with codecs.open(os.path.join(here, rel_path), "r") as fp:
+    with codecs.open(os.path.join(str(here), rel_path), "r") as fp:
         return fp.read()
 
 
@@ -24,8 +24,10 @@ def get_version(rel_path):
 
 setup(
     name="xi-mzidentml-converter",
-    version="0.1.30",
-    description="xi-mzidentml-converter uses pyteomics (https://pyteomics.readthedocs.io/en/latest/index.html) to parse mzIdentML files (v1.2.0) and extract crosslink information. Results are written to a relational database (PostgreSQL or SQLite) using sqlalchemy.",
+    version="0.2.0",
+    description="xi-mzidentml-converter uses pyteomics (https://pyteomics.readthedocs.io/en/latest/index.html) to "
+                "parse mzIdentML files (v1.2.0) and extract crosslink information. Results are written to a "
+                "relational database (PostgreSQL or SQLite) using sqlalchemy.",
     long_description_content_type="text/markdown",
     long_description=long_description,
     license="'Apache 2.0",

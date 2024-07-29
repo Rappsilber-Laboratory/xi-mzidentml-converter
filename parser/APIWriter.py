@@ -3,15 +3,15 @@ import requests
 import json
 
 from config.config_parser import get_api_configs
-from parser.writer import Writer
+from parser.Writer import Writer
 
 
+# noinspection PyPep8Naming
 class APIWriter(Writer):
     """Class for writing results to a relational database."""
 
-    def __init__(self, connection_str, user_id=None, upload_id=None, pxid=None):
-        self.pxid = pxid
-        self.upload_id = upload_id
+    def __init__(self, upload_id=None, pxid=None):
+        super().__init__(upload_id, pxid)
         configs = get_api_configs()
         self.base_url = configs['base_url']
         self.api_key = configs['api_key']
@@ -20,9 +20,9 @@ class APIWriter(Writer):
     def write_data(self, table, data):
         response = None
         try:
-            API_ENDPOINT = self.base_url+ "/write_data"
-            API_KEY_VALUE =  self.api_key_value
-            API_KEY =  self.api_key
+            API_ENDPOINT = self.base_url + "/write_data"
+            API_KEY_VALUE = self.api_key_value
+            API_KEY = self.api_key
             headers = {'Content-Type': 'application/json', API_KEY: API_KEY_VALUE}
             payload = {
                 "table": table,
@@ -47,7 +47,6 @@ class APIWriter(Writer):
             return response.json()
         else:
             return None
-
 
     def write_new_upload(self, table, data):
         response = None
@@ -82,7 +81,7 @@ class APIWriter(Writer):
                         provider, audits, samples, bib, upload_id):
         response = None
         try:
-            API_ENDPOINT = self.base_url + "/write_mzid_info?upload_id="+str(upload_id)
+            API_ENDPOINT = self.base_url + "/write_mzid_info?upload_id=" + str(upload_id)
             API_KEY_VALUE = self.api_key_value
             API_KEY = self.api_key
             headers = {'Content-Type': 'application/json', API_KEY: API_KEY_VALUE}
@@ -117,12 +116,11 @@ class APIWriter(Writer):
         else:
             return None
 
-
     def write_other_info(self, contains_crosslinks, upload_warnings, upload_id):
         response = None
         try:
-            #todo: use urljoin
-            API_ENDPOINT = self.base_url + "/write_other_info?upload_id="+str(upload_id)
+            # todo: use urljoin
+            API_ENDPOINT = self.base_url + "/write_other_info?upload_id=" + str(upload_id)
             API_KEY_VALUE = self.api_key_value
             API_KEY = self.api_key
             headers = {'Content-Type': 'application/json', API_KEY: API_KEY_VALUE}

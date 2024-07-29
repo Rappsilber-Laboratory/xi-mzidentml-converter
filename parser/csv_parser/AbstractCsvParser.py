@@ -1,18 +1,19 @@
-import sys
-import numpy as np
-from time import time
-import pandas as pd
-import sqlalchemy
-
-from parser.peaklistReader.PeakListWrapper import PeakListWrapper
-import os
-# import pyteomics.fasta as py_fasta
-from parser import SimpleFASTA
 import abc
+import os
+from time import time
+
+import numpy as np
+import pandas as pd
 from sqlalchemy import Table
+
+from parser import SimpleFASTA
+from parser.peaklistReader.PeakListWrapper import PeakListWrapper
 
 
 class CsvParseException(Exception):
+    """
+    Exception raised for errors parsing the csv file.
+    """
     pass
 
 
@@ -20,10 +21,20 @@ class MissingFileException(Exception):
     pass
 
 
-class AbstractCsvParser:
+class AbstractCsvParser(abc.ABC):
     """
 
     """
+
+    @property
+    @abc.abstractmethod
+    def required_cols(self):
+        pass
+
+    @property
+    @abc.abstractmethod
+    def optional_cols(self):
+        pass
 
     default_values = {
         'rank': 1,
@@ -46,13 +57,12 @@ class AbstractCsvParser:
 
     def __init__(self, csv_path, temp_dir, peak_list_dir, writer, logger):
         """
-
         :param csv_path: path to csv file
-        :param temp_dir: absolute path to temp dir for unzipping/storing files
-        :param db: database python module to use (xiUI_pg or xiSPEC_sqlite)
-        :param logger: logger to use
+        :param temp_dir: path to temp dir
+        :param peak_list_dir: path to peak list dir
+        :param writer: writer object
+        :param logger: logger object
         """
-
         self.csv_path = csv_path
         self.peak_list_readers = {}  # peak list readers indexed by spectraData_ref
 
@@ -138,7 +148,7 @@ class AbstractCsvParser:
         """
         return self.csv_reader.peaklistfilename.unique()
 
-    def get_sequenceDB_file_names(self):
+    def get_sequence_db_file_names(self):
         fasta_files = []
         for file in os.listdir(self.temp_dir):
             if file.endswith(".fasta") or file.endswith(".FASTA"):
@@ -203,12 +213,12 @@ class AbstractCsvParser:
         self.parse_db_sequences()  # overridden (empty function) in xiSPEC subclass
         self.main_loop()
 
-        meta_col_names = [col.replace("meta_", "") for col in self.meta_columns]
-        while len(meta_col_names) < 3:
-            meta_col_names.append(-1)
-        meta_data = [self.writer.upload_id] + meta_col_names + [self.contains_crosslinks]
-        # ToDo: need to create MetaData
-        # self.writer.write_data('MetaData', meta_data)
+        # meta_col_names = [col.replace("meta_", "") for col in self.meta_columns]
+        # while len(meta_col_names) < 3:
+        #     meta_col_names.append(-1)
+        # meta_data = [self.writer.upload_id] + meta_col_names + [self.contains_crosslinks]
+        # # ToDo: need to create MetaData
+        # # self.writer.write_data('MetaData', meta_data)
 
         self.logger.info('all done! Total time: ' + str(round(time() - start_time, 2)) + " sec")
 
@@ -235,7 +245,7 @@ class AbstractCsvParser:
     def parse_db_sequences(self):
         self.logger.info('reading fasta - start')
         self.start_time = time()
-        self.fasta = SimpleFASTA.get_db_sequence_dict(self.get_sequenceDB_file_names())
+        self.fasta = SimpleFASTA.get_db_sequence_dict(self.get_sequence_db_file_names())
         self.logger.info('reading fasta - done. Time: ' + str(round(time() - self.start_time, 2)) + " sec")
 
     def upload_info(self):
@@ -259,17 +269,18 @@ class AbstractCsvParser:
         # self.writer.write_data('Upload', upload_data)
         table = Table('upload', self.writer.meta, autoload_with=self.writer.engine, quote=False)
         with self.writer.engine.connect() as conn:
+            # noinspection PyBroadException
             try:
                 statement = table.insert().values(upload_data).returning(table.columns[0])  # RETURNING id AS upload_id
                 result = conn.execute(statement)
                 self.writer.upload_id = result.fetchall()[0][0]
                 conn.commit()
                 conn.close()
-            except Exception as e:
-                # its SQLite
+            except Exception:
+                # it's SQLite
                 upload_data['id'] = 1
                 statement = table.insert().values(upload_data)
-                result = conn.execute(statement)
+                conn.execute(statement)
                 self.writer.upload_id = upload_data['id']
                 conn.commit()
                 conn.close()

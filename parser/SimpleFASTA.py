@@ -3,6 +3,7 @@ import re
 
 #  why aren't we using pyteomics? todo? probably we haven't look at yet coz its only used by cvs parsers not mzid
 
+# noinspection PyUnusedLocal
 def get_db_sequence_dict(fasta_file_list):
     db_sequence_dict = {}
     identifier = None
@@ -38,7 +39,7 @@ def get_db_sequence_dict(fasta_file_list):
 
 
 def add_entry(identifier, sequence, description, seq_dict):
-    m = re.search("..\|(.*)\|(.*)\s?", identifier)
+    m = re.search(r'..\|(.*)\|(.*)\s?', identifier)
     # id = identifier
     accession = identifier
     name = identifier

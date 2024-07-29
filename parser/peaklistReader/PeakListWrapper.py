@@ -31,7 +31,7 @@ class Spectrum:
             102.234, 'charge': 2, 'intensity': 12654.35}
         :param mz_array: (ndarray, dtype: float64) m/z values of the spectrum peaks
         :param int_array: (ndarray, dtype: float64) intensity values of the spectrum peaks
-        :param rt: (str) Retention time in seconds (can be a range, e.g 60-62)
+        :param rt: (str) Retention time in seconds (can be a range, e.g. 60-62)
         """
         self.precursor = precursor
         self.rt = rt
@@ -139,7 +139,7 @@ class SpectraReader(ABC):
         """
         self._source = source
         if source_path is None:
-            if type(source) == str:
+            if isinstance(source, str):
                 self.source_path = source
             elif issubclass(type(source), io.TextIOBase) or \
                     issubclass(type(source), tarfile.ExFileObject):
@@ -185,6 +185,7 @@ class MGFReader(SpectraReader):
                     spec_id = int(spec_id)
                 except ValueError:
                     raise PeakListParseError("invalid spectrum ID format!")
+            # noinspection PyUnresolvedReferences
             spec = self._reader[spec_id]
 
         # MS:1000775 single peak list nativeID format
@@ -193,6 +194,7 @@ class MGFReader(SpectraReader):
         # typically in a folder of PKL or DTAs, where each sourceFileRef is different.
         elif self.spectrum_id_format_accession == 'MS:1000775':
             spec_id = 0
+            # noinspection PyUnresolvedReferences
             spec = self._reader[spec_id]
 
         # # MS:1000768 Thermo nativeID format: ToDo: not supported for now.
@@ -203,7 +205,7 @@ class MGFReader(SpectraReader):
 
         else:
             raise SpectrumIdFormatError(
-                    f"{self.spectrum_id_format_accession} not supported for MGF")
+                f"{self.spectrum_id_format_accession} not supported for MGF")
 
         return self._convert_spectrum(spec)
 
@@ -270,7 +272,7 @@ class MZMLReader(SpectraReader):
 
         else:
             raise SpectrumIdFormatError(
-                    f"{self.spectrum_id_format_accession} not supported for mzML!")
+                f"{self.spectrum_id_format_accession} not supported for mzML!")
 
         return self._convert_spectrum(spec)
 
@@ -359,7 +361,7 @@ class MS2Reader(SpectraReader):
 
         else:
             raise SpectrumIdFormatError(
-                    f"{self.spectrum_id_format_accession} not supported for MS2")
+                f"{self.spectrum_id_format_accession} not supported for MS2")
 
         try:
             spec = self._reader[spec_id]
@@ -402,5 +404,4 @@ class MS2Reader(SpectraReader):
 
 
 class MyMS2(ms2.IndexedMS2):
-     label = r'S\s+(.*\S)'
-
+    label = r'S\s+(.*\S)'

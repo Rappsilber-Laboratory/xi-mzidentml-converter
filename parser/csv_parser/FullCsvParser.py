@@ -5,34 +5,39 @@ import json
 
 
 class FullCsvParser(AbstractCsvParser):
-    required_cols = [
-        'pepseq1',
-        'peppos1',
-        'linkpos1',
-        'protein1',
-        'pepseq2',
-        'peppos2',
-        'linkpos2',
-        'protein2',
-        'peaklistfilename',
-        'scanid',
-        'charge',
-        'crosslinkermodmass',
-        # 'expMZ'
-    ]
 
-    optional_cols = [
-        # 'spectrum_id' $ ToDo: get rid of this? select alternatives by scanid and peaklistfilename?
-        'rank',
-        'fragmenttolerance',
-        'iontypes',
-        'passthreshold',
-        'score',
-        'decoy1',
-        'decoy2',
-        'expmz',  # ToDo: required in mzid - also make required col?
-        'calcmz'
-    ]
+    @property
+    def required_cols(self):
+        return [
+            'pepseq1',
+            'peppos1',
+            'linkpos1',
+            'protein1',
+            'pepseq2',
+            'peppos2',
+            'linkpos2',
+            'protein2',
+            'peaklistfilename',
+            'scanid',
+            'charge',
+            'crosslinkermodmass',
+            # 'expMZ'
+        ]
+
+    @property
+    def optional_cols(self):
+        return [
+            # 'spectrum_id' $ ToDo: get rid of this? select alternatives by scanid and peaklistfilename?
+            'rank',
+            'fragmenttolerance',
+            'iontypes',
+            'passthreshold',
+            'score',
+            'decoy1',
+            'decoy2',
+            'expmz',  # ToDo: required in mzid - also make required col?
+            'calcmz'
+        ]
 
     def main_loop(self):
         main_loop_start_time = time()
@@ -85,7 +90,7 @@ class FullCsvParser(AbstractCsvParser):
             # delta of zero. It is RECOMMENDED that the 'donor' peptide SHOULD be the longer peptide, followed by
             # alphabetical order for equal length peptides.
 
-            invalid_char_pattern_pepseq = '([^GALMFWKQESPVICYHRNDTXa-z:0-9(.)\-]+)'
+            invalid_char_pattern_pepseq = r'([^GALMFWKQESPVICYHRNDTXa-z:0-9(.)\-]+)'
             # pepSeq - 1
             if id_item['pepseq1'] == '':
                 raise CsvParseException('Missing PepSeq1 for row: %s' % row_number)
@@ -149,31 +154,32 @@ class FullCsvParser(AbstractCsvParser):
                 raise CsvParseException(
                     'Invalid passThreshold value: %s for row: %s' % (id_item['passthreshold'], row_number))
 
-            # fragmenttolerance
-            if not re.match('^([0-9.]+) (ppm|Da)$', str(id_item['fragmenttolerance'])):
-                raise CsvParseException(
-                    'Invalid FragmentTolerance value: %s in row: %s' % (id_item['fragmenttolerance'], row_number))
-            else:
-                fragment_tolerance = id_item['fragmenttolerance']
+            # fragmenttolerance - ToDo: fix - would beed to write SpectrumIdentificationProtocol for CSV
+            # if not re.match('^([0-9.]+) (ppm|Da)$', str(id_item['fragmenttolerance'])):
+            #     raise CsvParseException(
+            #         'Invalid FragmentTolerance value: %s in row: %s' % (id_item['fragmenttolerance'], row_number))
+            # else:
+            #     fragment_tolerance = id_item['fragmenttolerance']
 
             # iontypes
-            ions = id_item['iontypes'].split(';')
-            valid_ions = [
-                'peptide',
-                'a',
-                'b',
-                'c',
-                'x',
-                'y',
-                'z',
-                ''  # split will add an empty sell if string ends with ';'
-            ]
-            if any([True for ion in ions if ion not in valid_ions]):
-                raise CsvParseException(
-                    'Unsupported IonType in: %s in row %s! Supported ions are: peptide;a;b;c;x;y;z.'
-                    % (id_item['iontypes'], row_number)
-                )
-            ion_types = id_item['iontypes']
+            # ions = id_item['iontypes'].split(';')
+            # valid_ions = [
+            #     'peptide',
+            #     'a',
+            #     'b',
+            #     'c',
+            #     'x',
+            #     'y',
+            #     'z',
+            #     ''  # split will add an empty sell if string ends with ';'
+            # ]
+            # ToDo: fix - would beed to write SpectrumIdentificationProtocol for CSV
+            # if any([True for ion in ions if ion not in valid_ions]):
+            #     raise CsvParseException(
+            #         'Unsupported IonType in: %s in row %s! Supported ions are: peptide;a;b;c;x;y;z.'
+            #         % (id_item['iontypes'], row_number)
+            #     )
+            # ion_types = id_item['iontypes']
 
             # score
             try:
@@ -304,7 +310,7 @@ class FullCsvParser(AbstractCsvParser):
 
                     spectrum = {
                         'id': scan_id,
-                        'spectra_data_ref': peak_list_file_name,
+                        'spectra_data_id': peak_list_file_name,
                         'upload_id': self.writer.upload_id,
                         'peak_list_file_name': peak_list_file_name,
                         'precursor_mz': spectrum.precursor['mz'],
@@ -378,8 +384,8 @@ class FullCsvParser(AbstractCsvParser):
             for i in range(len(protein_list1)):
                 pep_evidence1 = {
                     'upload_id': self.writer.upload_id,
-                    'peptide_ref': pep1_id,
-                    'dbsequence_ref': protein_list1[i],
+                    'peptide_id': pep1_id,
+                    'dbsequence_id': protein_list1[i],
                     'pep_start': pep_pos_list1[i],
                     'is_decoy': is_decoy_list1[i],
                 }
@@ -390,13 +396,13 @@ class FullCsvParser(AbstractCsvParser):
                 # peptide evidence - 2
 
                 if pep2_id is None:
-                    raise BaseException('Fatal! peptide id error!')
+                    raise Exception('Fatal! peptide id error!')
 
                 for i in range(len(protein_list2)):
                     pep_evidence2 = {
                         'upload_id': self.writer.upload_id,
-                        'peptide_ref': pep2_id,
-                        'dbsequence_ref': protein_list2[i],
+                        'peptide_id': pep2_id,
+                        'dbsequence_id': protein_list2[i],
                         'pep_start': pep_pos_list2[i],
                         'is_decoy': is_decoy_list2[i],
                     }
@@ -466,7 +472,7 @@ class FullCsvParser(AbstractCsvParser):
                     'sequence': self.fasta[prot_id][3],
                 }
             except KeyError:
-                sp_regex = re.compile('(.*)\|(.*)\|(.*)')
+                sp_regex = re.compile(r'(.*)\|(.*)\|(.*)')
                 matches = sp_regex.search(prot_id)
                 if matches is not None:
                     db_seq = {
@@ -501,7 +507,7 @@ class FullCsvParser(AbstractCsvParser):
             self.writer.write_data("peptideevidence", peptide_evidences)
             if self.peak_list_dir:
                 self.writer.write_data("spectrum", spectra)
-            self.writer.write_data("spectrumidentification", spectrum_identifications)
+            self.writer.write_data("match", spectrum_identifications)
         except Exception as e:
             raise e
 

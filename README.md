@@ -17,14 +17,6 @@ Clone git repository :
 
 ```git clone https://github.com/Rappsilber-Laboratory/xi-mzidentml-converter.git```
 
-cd into the repository:
-
-```cd xi-mzidentml-converter```
-
-Checkout python3 branch:
-
-```git checkout python3```
-
 ## 2. create a postgresql role and database to use
 
 ```
@@ -50,26 +42,27 @@ sudo service postgresql restart
 
 ## 3. Configure the python environment for the file parser
 
-edit the file xiSPEC_ms_parser/credentials.py to point to your postgressql database.
+edit the file xi-mzidentml-converter/config/database.ini to point to your postgressql database.
 e.g. so its content is:
 ```
-hostname = 'localhost'
-username = 'xiadmin'
-password = 'your_password_here'
-database = 'xiview'
-port = 5432
+[postgresql]
+host=localhost
+database=xitest
+user=xiadmin
+password=your_password_here
+port=5432
 ```
 
 Set up the python environment:
 
 ```
-cd xiSPEC_ms_parser
+cd x-mzidentml-converter
 pipenv install --python 3.10
 ```
 
 run create_db_schema.py to create the database tables:
 ```
-python create_db_schema.py
+python database/create_db_schema.py
 ```
 
 parse a test dataset:

@@ -1,9 +1,10 @@
 from abc import ABC, abstractmethod
 
-## Strategy interface
+
+# Strategy interface
 class Writer(ABC):
 
-    def __init__(self, connection_str, user_id=None, upload_id=None, pxid=None):
+    def __init__(self, upload_id=None, pxid=None):
         self.pxid = pxid
         self.upload_id = upload_id
 

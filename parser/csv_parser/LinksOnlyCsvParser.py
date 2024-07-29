@@ -6,20 +6,26 @@ import json
 
 
 class LinksOnlyCsvParser(AbstractCsvParser):
-    required_cols = [
-        'abspos1',
-        'protein1',
-        'abspos2',
-        'protein2',
-    ]
 
-    optional_cols = [
-        'passthreshold',
-        'score',
-        'decoy1',
-        'decoy2',
-    ]
+    @property
+    def required_cols(self):
+        return [
+            'abspos1',
+            'protein1',
+            'abspos2',
+            'protein2',
+        ]
 
+    @property
+    def optional_cols(self):
+        return [
+            'passthreshold',
+            'score',
+            'decoy1',
+            'decoy2',
+        ]
+
+    # noinspection PyUnboundLocalVariable
     def main_loop(self):
         main_loop_start_time = time()
         self.logger.info('main loop LinksOnlyCsvParser - start')
@@ -186,10 +192,11 @@ class LinksOnlyCsvParser(AbstractCsvParser):
                 else:
                     pep2_id = None
 
-                m = re.search("..\|(.*)\|(.*)\s?", protein_list1[i])
-                accession = protein_list1[i]
-                if m:
-                    accession = m.groups()[0]
+                # m = re.search(r'..\|(.*)\|(.*)\s?', protein_list1[i])
+                # ToDO: fix?
+                # accession = protein_list1[i]
+                # if m:
+                #     accession = m.groups()[0]
                 pep_evidence1 = {
                     'upload_id': self.writer.upload_id,
                     'peptide_ref': pep1_id,
@@ -204,14 +211,14 @@ class LinksOnlyCsvParser(AbstractCsvParser):
                 # peptide evidence - 2
 
                 if pep2_id is None:
-                    raise BaseException('Fatal! peptide id error!')
+                    raise Exception('Fatal! peptide id error!')
 
                 for i in range(len(protein_list2)):
-
-                    m = re.search("..\|(.*)\|(.*)\s?", protein_list2[i])
-                    accession = protein_list2[i]
-                    if m:
-                        accession = m.groups()[0]
+                    # m = re.search(r'..\|(.*)\|(.*)\s?', protein_list2[i])
+                    # ToDo: fix?
+                    # accession = protein_list2[i]
+                    # if m:
+                    #     accession = m.groups()[0]
 
                     pep_evidence2 = {
                         'upload_id': self.writer.upload_id,
@@ -254,7 +261,7 @@ class LinksOnlyCsvParser(AbstractCsvParser):
                     'sequence': self.fasta[prot_id][3],
                 }
             except KeyError:
-                sp_regex = re.compile('(.*)\|(.*)\|(.*)')
+                sp_regex = re.compile(r'(.*)\|(.*)\|(.*)')
                 matches = sp_regex.search(prot_id)
                 if matches is not None:
                     db_seq = {
@@ -302,7 +309,7 @@ class LinksOnlyCsvParser(AbstractCsvParser):
             self.writer.write_data("dbsequence", db_sequences)
             self.writer.write_data("modifiedpeptide", peptides)
             self.writer.write_data("peptideevidence", peptide_evidences)
-            self.writer.write_data("spectrumidentification", spectrum_identifications)
+            self.writer.write_data("match", spectrum_identifications)
         except Exception as e:
             raise e
 

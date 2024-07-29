@@ -1,22 +1,24 @@
 from sqlalchemy import create_engine, MetaData
 from sqlalchemy import Table
+
+from parser.Writer import Writer
 from parser.database.create_db_schema import create_schema
 from sqlalchemy_utils import database_exists
 
 
-class DatabaseWriter:
+class DatabaseWriter(Writer):
     """Class for writing results to a relational database."""
 
-    def __init__(self, connection_str, user_id=None, upload_id=None, pxid=None):
+    def __init__(self, connection_str, upload_id=None, pxid=None):
         """
         Initialises the database connection and the writer in general.
 
         :param connection_str: database connection string
-        :param user_id: UUID of the UserAccount (postgresql specific)
         """
         # Connection setup.
         # The 'engine' in SQLAlchemy is a Factory and connection pool to the database.
         # It has lazy initialisation.
+        super().__init__(upload_id, pxid)
         self.engine = create_engine(connection_str)
         self.meta = MetaData()
         self.pxid = pxid
@@ -40,13 +42,13 @@ class DatabaseWriter:
             conn.close()
 
     def write_new_upload(self, table, data):
-            table = Table(table, self.meta, autoload_with=self.engine, quote=False)
-            with self.engine.connect() as conn:
-                statement = table.insert().values(data).returning(table.columns[0])  # RETURNING id AS upload_id
-                result = conn.execute(statement)
-                conn.commit()
-                conn.close()
-            return result.fetchall()[0][0]
+        table = Table(table, self.meta, autoload_with=self.engine, quote=False)
+        with self.engine.connect() as conn:
+            statement = table.insert().values(data).returning(table.columns[0])  # RETURNING id AS upload_id
+            result = conn.execute(statement)
+            conn.commit()
+            conn.close()
+        return result.fetchall()[0][0]
 
     def write_mzid_info(self, analysis_software_list, spectra_formats,
                         provider, audits, samples, bib, upload_id):
@@ -54,11 +56,13 @@ class DatabaseWriter:
         Update Upload row with mzid info.
 
         ToDo: have this explicitly or create update func?
+        :param analysis_software_list: (list) List of analysis software used.
         :param spectra_formats:
         :param provider:
         :param audits:
         :param samples:
         :param bib:
+        :param upload_id:
         :return:
         """
         upload = Table("upload", self.meta, autoload_with=self.engine, quote=False)
@@ -81,6 +85,7 @@ class DatabaseWriter:
         ToDo: have this explicitly or create update func?
         :param contains_crosslinks:
         :param upload_warnings:
+        :param upload_id:
         :return:
         """
         upload = Table("upload", self.meta, autoload_with=self.engine, quote=False)

@@ -6,7 +6,7 @@ from typing import Optional, Any
 
 class ModifiedPeptide(Base):
     __tablename__ = "modifiedpeptide"
-    id: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
     upload_id: Mapped[str] = mapped_column(Integer, ForeignKey("upload.id"), index=True, primary_key=True,
                                            nullable=False)
     base_sequence: Mapped[str] = mapped_column(Text, nullable=False)

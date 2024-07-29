@@ -8,13 +8,9 @@ class SpectraData(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
     upload_id: Mapped[int] = mapped_column(Integer, ForeignKey("upload.id"), primary_key=True,
                                            index=True, nullable=False)
-    spectra_data_ref: Mapped[str] = mapped_column(Text, nullable=False)
     location: Mapped[str] = mapped_column(Text, nullable=False)
     name: Mapped[str] = mapped_column(Text, nullable=True)
     external_format_documentation: Mapped[str] = mapped_column(Text, nullable=True)
     file_format: Mapped[str] = mapped_column(Text, nullable=False)
     spectrum_id_format: Mapped[str] = mapped_column(Text, nullable=False)
 
-    __table_args__ = (
-        UniqueConstraint("spectra_data_ref", "upload_id"),
-    )

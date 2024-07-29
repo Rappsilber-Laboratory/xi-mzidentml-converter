@@ -13,8 +13,8 @@ class Match(Base):
     spectra_data_id: Mapped[int] = mapped_column(Integer, nullable=True)  # nullable for csv data
     multiple_spectra_identification_id: Mapped[str] = mapped_column(Integer, nullable=True)
     multiple_spectra_identification_pc: Mapped[str] = mapped_column(CHAR, nullable=True)
-    pep1_id: Mapped[str] = mapped_column(Text, nullable=False)
-    pep2_id: Mapped[str] = mapped_column(Text, nullable=True)
+    pep1_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    pep2_id: Mapped[int] = mapped_column(Integer, nullable=True)
     charge_state: Mapped[int] = mapped_column(Integer, nullable=True)
     pass_threshold: Mapped[bool] = mapped_column(BOOLEAN, nullable=False)
     rank: Mapped[int] = mapped_column(Integer, nullable=False)
@@ -35,12 +35,10 @@ class Match(Base):
         ForeignKeyConstraint(
             ["pep2_id", "upload_id"],
             ["modifiedpeptide.id", "modifiedpeptide.upload_id"],
-        )
+        ),
+        # ForeignKeyConstraint(
+        # ["spectrum_id", "spectra_data_id", "upload_id"],
+        # ["spectrum.id", "spectrum.spectra_data_id", "spectrum.upload_id"],
+        # ),
     )
 
-    # Can't use this ForeignKeyConstraint, because we want to allow people to upload data
-    # without spectra
-    # ForeignKeyConstraint(
-    #     ["spectrum_id", "spectra_data_ref", "upload_id"],
-    #     ["Spectrum.id", "Spectrum.spectra_data_ref", "Spectrum.upload_id"],
-    # ),

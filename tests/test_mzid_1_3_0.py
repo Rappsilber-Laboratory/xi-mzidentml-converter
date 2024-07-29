@@ -27,42 +27,42 @@ def test_psql_multi_spectra_mzid_parser(tmpdir, db_info, use_database, engine):
         assert len(results) == 6
 
         assert results[0].id == 'HCD_SII_0'
-        assert results[0].pep1_id == 'p1'
-        assert results[0].pep2_id == 'p2'
+        assert results[0].pep1_id == 0  # 'p1'
+        assert results[0].pep2_id == 1  # 'p2'
         assert results[0].multiple_spectra_identification_id == 1234
         assert results[0].multiple_spectra_identification_pc == 'P'
         assert results[0].sip_id == 0 #  'sil_HCD'
 
         assert results[1].id == 'ETD_SII_0'
-        assert results[1].pep1_id == 'p1'
-        assert results[1].pep2_id == 'p2'
+        assert results[1].pep1_id == 0  # 'p1'
+        assert results[1].pep2_id == 1  # 'p2'
         assert results[1].multiple_spectra_identification_id == 1234
         assert results[1].multiple_spectra_identification_pc == 'P'
         assert results[1].sip_id == 1 #  'sil_ETD'
 
         assert results[2].id == 'MS3_SII_0'
-        assert results[2].pep1_id == 'p1_a'
+        assert results[2].pep1_id == 2 #  'p1_a'
         assert results[2].pep2_id is None
         assert results[2].multiple_spectra_identification_id == 1234
         assert results[2].multiple_spectra_identification_pc == 'C'
         assert results[2].sip_id == 2 # 'sil_MS3'
 
         assert results[3].id == 'MS3_SII_1'
-        assert results[3].pep1_id == 'p2_t'
+        assert results[3].pep1_id == 5 #  'p2_t'
         assert results[3].pep2_id is None
         assert results[3].multiple_spectra_identification_id == 1234
         assert results[3].multiple_spectra_identification_pc == 'C'
-        assert results[3].sip_id == 2 # 'sil_MS3'
+        assert results[3].sip_id == 2  # 'sil_MS3'
 
         assert results[4].id == 'MS3_SII_2'
-        assert results[4].pep1_id == 'p1_t'
+        assert results[4].pep1_id == 3  # 'p1_t'
         assert results[4].pep2_id is None
         assert results[4].multiple_spectra_identification_id == 1234
         assert results[4].multiple_spectra_identification_pc == 'C'
-        assert results[4].sip_id == 2 # 'sil_MS3'
+        assert results[4].sip_id == 2  # 'sil_MS3'
 
         assert results[5].id == 'MS3_SII_3'
-        assert results[5].pep1_id == 'p2_a'
+        assert results[5].pep1_id == 4  # 'p2_a'
         assert results[5].pep2_id is None
         assert results[5].multiple_spectra_identification_id == 1234
         assert results[5].multiple_spectra_identification_pc == 'C'
@@ -90,18 +90,18 @@ def test_psql_looplink_mzid_parser(tmpdir, db_info, use_database, engine):
         assert len(results) == 1
 
         assert results[0].id == 'SII_7_1'
-        assert results[0].pep1_id == 'peptide_7_1'
+        assert results[0].pep1_id == 5  # 'peptide_7_1'
         assert results[0].pep2_id is None
 
         t = Table("modifiedpeptide", id_parser.writer.meta, autoload_with=id_parser.writer.engine,
                   quote=False)
-        stmt = t.select().where(t.c.id == 'peptide_7_1')
+        stmt = t.select().where(t.c.id == 5)  # 'peptide_7_1')
 
         rs = conn.execute(stmt)
         results = rs.fetchall()
         assert len(results) == 1
 
-        assert results[0].id == 'peptide_7_1'
+        assert results[0].id == 5  # 'peptide_7_1'
         assert results[0].base_sequence == 'DVIQSLVDDDLVAK'
         assert results[0].mod_accessions == []
         assert results[0].mod_avg_mass_deltas == []
@@ -135,18 +135,18 @@ def test_psql_noncov_mzid_parser(tmpdir, db_info, use_database, engine):
         assert len(results) == 1
 
         assert results[0].id == 'SII_1_1'
-        assert results[0].pep1_id == 'p1'
-        assert results[0].pep2_id == 'p2'
+        assert results[0].pep1_id == 0  # 'p1'
+        assert results[0].pep2_id == 1  # 'p2'
 
         t = Table("modifiedpeptide", id_parser.writer.meta, autoload_with=id_parser.writer.engine,
                   quote=False)
-        stmt = t.select().where(t.c.id == 'p1')
+        stmt = t.select().where(t.c.id == 0) #  'p1')
 
         rs = conn.execute(stmt)
         results = rs.fetchall()
         assert len(results) == 1
 
-        assert results[0].id == 'p1'
+        assert results[0].id == 0  # 'p1'
         assert results[0].base_sequence == 'AYALMTDIHWDDCFCR'
         assert results[0].mod_accessions == [{'MS:1003393': 'ox', 'UNIMOD:35': 'Oxidation'},
                                              {'MS:1003393': 'cm', 'UNIMOD:4': 'Carbamidomethyl'},
@@ -162,13 +162,13 @@ def test_psql_noncov_mzid_parser(tmpdir, db_info, use_database, engine):
 
         t = Table("modifiedpeptide", id_parser.writer.meta, autoload_with=id_parser.writer.engine,
                   quote=False)
-        stmt = t.select().where(t.c.id == 'p2')
+        stmt = t.select().where(t.c.id == 1)  # 'p2')
 
         rs = conn.execute(stmt)
         results = rs.fetchall()
         assert len(results) == 1
 
-        assert results[0].id == 'p2'
+        assert results[0].id == 1  # 'p2'
         assert results[0].base_sequence == 'VHTECCHGDLLECADDR'
         assert results[0].mod_accessions == [{'MS:1003393': 'cm', 'UNIMOD:4': 'Carbamidomethyl'},
                                              {'MS:1003393': 'cm', 'UNIMOD:4': 'Carbamidomethyl'},

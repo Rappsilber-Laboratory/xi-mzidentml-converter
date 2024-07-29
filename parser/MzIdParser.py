@@ -46,6 +46,8 @@ class MzIdParser:
         self.spectra_data_id_lookup = {}  # spectra_data_ref to spectra_data_id lookup
         self.sip_ref_to_sip_id_lookup = {}  # sip_ref to sip_id lookup
         self.sil_ref_to_protocol_id_lookup = {}  # sip_ref to sip_id lookup
+        self.pep_ref_to_pep_id_lookup = {}  # peptide_ref to peptide_id lookup
+
         self.temp_dir = temp_dir
         if not self.temp_dir.endswith('/'):
             self.temp_dir += '/'
@@ -182,7 +184,7 @@ class MzIdParser:
             spectra_datum = {
                 'id': sd_int_id,
                 'upload_id': self.writer.upload_id,
-                'spectra_data_ref': spectra_data_id,
+                # 'spectra_data_ref': spectra_data_id,
                 'location': sp_datum['location'],
                 'name': sp_datum.get('name', None),
                 'external_format_documentation': sp_datum.get('externalFormatDocumentation', None),
@@ -549,7 +551,8 @@ class MzIdParser:
                                              f'crosslinks, including multiple looplinks in peptide not supported')
 
             peptide_data = {
-                'id': peptide['id'],
+                'id': peptide_index,
+                # 'ref': peptide['id'],
                 'upload_id': self.writer.upload_id,
                 'base_sequence': peptide['PeptideSequence'],
                 'mod_accessions': mod_accessions,
@@ -564,6 +567,7 @@ class MzIdParser:
             }
 
             peptides.append(peptide_data)
+            self.pep_ref_to_pep_id_lookup[peptide['id']] = peptide_index
 
             # Batch write 500 peptides into the DB
             if peptide_index > 0 and peptide_index % 500 == 0:
@@ -604,8 +608,8 @@ class MzIdParser:
 
             pep_ev_data = {
                 'upload_id': self.writer.upload_id,
-                'peptide_ref': peptide_evidence["peptide_ref"],
-                'dbsequence_ref': peptide_evidence["dBSequence_ref"],
+                'peptide_id': self.pep_ref_to_pep_id_lookup[peptide_evidence["peptide_ref"]],
+                'dbsequence_id': peptide_evidence["dBSequence_ref"],
                 # 'protein_accession': seq_id_to_acc_map[peptide_evidence["dBSequence_ref"]],
                 'pep_start': pep_start,
                 'is_decoy': is_decoy,
@@ -672,7 +676,7 @@ class MzIdParser:
 
                     spectra.append({
                         'id': sid_result["spectrumID"],
-                        'spectra_data_ref': sid_result['spectraData_ref'],
+                        'spectra_data_id': self.spectra_data_id_lookup[sid_result['spectraData_ref']],
                         'upload_id': self.writer.upload_id,
                         'peak_list_file_name': ntpath.basename(peak_list_reader.peak_list_path),
                         'precursor_mz': spectrum.precursor['mz'],
@@ -707,7 +711,7 @@ class MzIdParser:
                     if local_ident_id in ident_dict.keys():
                         # do crosslink specific stuff
                         ident_data = ident_dict.get(local_ident_id)
-                        ident_data['pep2_id'] = spec_id_item['peptide_ref']
+                        ident_data['pep2_id'] = self.pep_ref_to_pep_id_lookup[spec_id_item['peptide_ref']]
                     else:
                         # do stuff common to linears and crosslinks
 
@@ -738,7 +742,7 @@ class MzIdParser:
                             'upload_id': self.writer.upload_id,
                             'spectrum_id': sid_result['spectrumID'],
                             'spectra_data_id': sd_int_id,
-                            'pep1_id': spec_id_item['peptide_ref'],
+                            'pep1_id': self.pep_ref_to_pep_id_lookup[spec_id_item['peptide_ref']],
                             'pep2_id': None,
                             'charge_state': int(spec_id_item['chargeState']),
                             'pass_threshold': spec_id_item['passThreshold'],

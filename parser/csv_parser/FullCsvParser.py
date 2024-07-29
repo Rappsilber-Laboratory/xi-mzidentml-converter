@@ -310,7 +310,7 @@ class FullCsvParser(AbstractCsvParser):
 
                     spectrum = {
                         'id': scan_id,
-                        'spectra_data_ref': peak_list_file_name,
+                        'spectra_data_id': peak_list_file_name,
                         'upload_id': self.writer.upload_id,
                         'peak_list_file_name': peak_list_file_name,
                         'precursor_mz': spectrum.precursor['mz'],
@@ -384,8 +384,8 @@ class FullCsvParser(AbstractCsvParser):
             for i in range(len(protein_list1)):
                 pep_evidence1 = {
                     'upload_id': self.writer.upload_id,
-                    'peptide_ref': pep1_id,
-                    'dbsequence_ref': protein_list1[i],
+                    'peptide_id': pep1_id,
+                    'dbsequence_id': protein_list1[i],
                     'pep_start': pep_pos_list1[i],
                     'is_decoy': is_decoy_list1[i],
                 }
@@ -401,8 +401,8 @@ class FullCsvParser(AbstractCsvParser):
                 for i in range(len(protein_list2)):
                     pep_evidence2 = {
                         'upload_id': self.writer.upload_id,
-                        'peptide_ref': pep2_id,
-                        'dbsequence_ref': protein_list2[i],
+                        'peptide_id': pep2_id,
+                        'dbsequence_id': protein_list2[i],
                         'pep_start': pep_pos_list2[i],
                         'is_decoy': is_decoy_list2[i],
                     }

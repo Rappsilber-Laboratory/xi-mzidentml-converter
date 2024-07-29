@@ -46,20 +46,36 @@ def compare_db_sequence(results):
 
 def compare_peptide_evidence(results):
     assert len(results) == 38
-    # peptide_ref from <PeptideEvidence>
-    assert results[0].peptide_ref == '29_KVLDSKPSVLALNIQR_30_KFDAKMVGK_1_5_p1'
-    # dbsequence_ref from <PeptideEvidence>
-    assert results[0].dbsequence_ref == 'dbseq_P0C0V0_target'
+    assert results[0].peptide_id == 0  # id from incrementing count
+    #assert results[0].peptide_ref == '29_KVLDSKPSVLALNIQR_30_KFDAKMVGK_1_5_p1'
+    assert results[0].dbsequence_id == 'dbseq_P0C0V0_target'
     assert results[0].pep_start == 148  # start from <PeptideEvidence>
     assert not results[0].is_decoy  # is_decoy from <PeptideEvidence>
-    # ToDo: check more rows?
+
+    assert results[1].peptide_id == 1  # id from incrementing count
+    # assert results[0].peptide_ref == '29_KVLDSKPSVLALNIQR_30_KFDAKMVGK_1_5_p1'
+    assert results[1].dbsequence_id == 'dbseq_P0C0V0_target'
+    assert results[1].pep_start == 449  # start from <PeptideEvidence>
+    assert not results[1].is_decoy  # is_decoy from <PeptideEvidence>
+
+    assert results[36].peptide_id == 36  # id from incrementing count
+    # assert results[0].peptide_ref == '29_KVLDSKPSVLALNIQR_30_KFDAKMVGK_1_5_p1'
+    assert results[36].dbsequence_id == 'dbseq_P0AGE9_target'
+    assert results[36].pep_start == 263  # start from <PeptideEvidence>
+    assert not results[36].is_decoy  # is_decoy from <PeptideEvidence>
+
+    assert results[37].peptide_id == 37  # id from incrementing count
+    # assert results[0].peptide_ref == '29_KVLDSKPSVLALNIQR_30_KFDAKMVGK_1_5_p1'
+    assert results[37].dbsequence_id == 'dbseq_P0AGE9_target'
+    assert results[37].pep_start == 224  # start from <PeptideEvidence>
+    assert not results[37].is_decoy  # is_decoy from <PeptideEvidence>
 
 
 def compare_modified_peptide(results):
     assert len(results) == 38
 
     # id from <Peptide> id
-    assert results[0].id == '29_KVLDSKPSVLALNIQR_30_KFDAKMVGK_1_5_p1'
+    assert results[0].id == 0 #  '29_KVLDSKPSVLALNIQR_30_KFDAKMVGK_1_5_p1'
     assert results[0].base_sequence == 'KFDAKMVGK'  # value of <PeptideSequence>
     assert results[0].mod_accessions == []
     assert results[0].mod_positions == []
@@ -71,7 +87,7 @@ def compare_modified_peptide(results):
     assert results[0].crosslinker_pair_id == '1.0'
 
     # id from <Peptide> id
-    assert results[1].id == '29_KVLDSKPSVLALNIQR_30_KFDAKMVGK_1_5_p0'
+    assert results[1].id == 1 #  '29_KVLDSKPSVLALNIQR_30_KFDAKMVGK_1_5_p0'
     assert results[1].base_sequence == 'KVLDSKPSVLALNIQR'  # value of <PeptideSequence>
     assert results[1].mod_accessions == []
     assert results[1].mod_positions == []
@@ -83,7 +99,7 @@ def compare_modified_peptide(results):
     assert results[1].crosslinker_pair_id == '1.0'
 
     # id from <Peptide> id
-    assert results[2].id == '19_LLAEHNLDmetASAIKGTGVGGR_20_HLAKAPAK_13_4_p1'
+    assert results[2].id == 2 #  '19_LLAEHNLDmetASAIKGTGVGGR_20_HLAKAPAK_13_4_p1'
     assert results[2].base_sequence == 'HLAKAPAK'  # value of <PeptideSequence>
     assert results[2].mod_accessions == []
     assert results[2].mod_positions == []
@@ -95,7 +111,7 @@ def compare_modified_peptide(results):
     assert results[2].crosslinker_pair_id == '2.0'
 
     # id from <Peptide> id
-    assert results[3].id == '19_LLAEHNLDmetASAIKGTGVGGR_20_HLAKAPAK_13_4_p0'
+    assert results[3].id == 3 #  '19_LLAEHNLDmetASAIKGTGVGGR_20_HLAKAPAK_13_4_p0'
     assert results[3].base_sequence == 'LLAEHNLDASAIKGTGVGGR'  # value of <PeptideSequence>
     assert results[3].mod_accessions == [{'UNIMOD:34': 'Methyl'}]
     assert results[3].mod_positions == [8]
@@ -300,8 +316,8 @@ def compare_analysis_collection_mzml(results):
 
 def compare_spectrum_mgf(conn, peak_list_folder):
     peaklists = [
+        'recal_B190717_20_HF_LS_IN_130_ECLP_DSSO_01_SCX23_hSAX01_rep2.mgf',
         'recal_B190717_13_HF_LS_IN_130_ECLP_DSSO_01_SCX23_hSAX05_rep2.mgf',
-        'recal_B190717_20_HF_LS_IN_130_ECLP_DSSO_01_SCX23_hSAX01_rep2.mgf'
     ]
     for pl in peaklists:
         rs = conn.execute(text(f"SELECT * FROM Spectrum WHERE peak_list_file_name = '{pl}'"))
@@ -316,7 +332,7 @@ def compare_spectrum_mgf(conn, peak_list_folder):
             # spectrumID from <SpectrumIdentificationResult>
             assert r.id == f'index={reader_idx}'  # a bit circular here
             # spectraData_ref from <SpectrumIdentificationResult>
-            assert r.spectra_data_ref == f'SD_0_{pl}'
+            assert r.spectra_data_id == peaklists.index(pl) #  ref == f'SD_0_{pl}'
             assert r.peak_list_file_name == pl
             assert r.precursor_mz == spectrum['params']['pepmass'][0]
             assert r.precursor_charge == spectrum['params']['charge'][0]
@@ -393,11 +409,11 @@ def test_psql_mgf_mzid_parser(tmpdir, use_database, engine):
         #        'SD_0_recal_B190717_13_HF_LS_IN_130_ECLP_DSSO_01_SCX23_hSAX05_rep2.mgf'
         assert results[0].spectra_data_id == 1
         # peptide_ref from <SpectrumIdentificationItem>
-        assert results[0].pep1_id == \
-               '6_VAEmetETPHLIHKVALDPLTGPMPYQGR_11_MGHAGAIIAGGKGTADEK_11_12_p1'
+        assert results[0].pep1_id == 4 #\
+               # '6_VAEmetETPHLIHKVALDPLTGPMPYQGR_11_MGHAGAIIAGGKGTADEK_11_12_p1'
         # peptide_ref from matched <SpectrumIdentificationItem> by crosslink_identification_id
-        assert results[0].pep2_id == \
-               '6_VAEmetETPHLIHKVALDPLTGPMPYQGR_11_MGHAGAIIAGGKGTADEK_11_12_p0'
+        assert results[0].pep2_id == 5 # \
+               # '6_VAEmetETPHLIHKVALDPLTGPMPYQGR_11_MGHAGAIIAGGKGTADEK_11_12_p0'
         assert results[0].charge_state == 5  # chargeState from <SpectrumIdentificationItem>
         assert results[0].pass_threshold  # passThreshold from <SpectrumIdentificationItem>
         assert results[0].rank == 1  # rank from <SpectrumIdentificationItem>
@@ -510,8 +526,8 @@ def test_psql_mzml_mzid_parser(tmpdir, use_database, engine):
         # spectrumID from <SpectrumIdentificationResult>
         assert results[0].id == 'controllerType=0 controllerNumber=1 scan=14905'
         # spectraData_ref from <SpectrumIdentificationResult>
-        assert results[0].spectra_data_ref == (
-            'SD_0_recal_B190717_13_HF_LS_IN_130_ECLP_DSSO_01_SCX23_hSAX05_rep2.mzML')
+        assert results[0].spectra_data_id == 1 # (
+            # 'SD_0_recal_B190717_13_HF_LS_IN_130_ECLP_DSSO_01_SCX23_hSAX05_rep2.mzML')
         assert results[0].peak_list_file_name == 'B190717_13_HF_LS_IN_130_ECLP_DSSO_01_SCX23_hSAX05_rep2.mzML'
         # Precursor info from mzML
         # Spectrum->precursorList->precursor[0]->selectedIonList->selectedIon[0]
@@ -1158,11 +1174,11 @@ def test_psql_mzml_mzid_parser(tmpdir, use_database, engine):
         #        'SD_0_recal_B190717_13_HF_LS_IN_130_ECLP_DSSO_01_SCX23_hSAX05_rep2.mzML'
         assert results[0].spectra_data_id == 1
         # peptide_ref from <SpectrumIdentificationItem>
-        assert results[0].pep1_id == \
-               '6_VAEmetETPHLIHKVALDPLTGPMPYQGR_11_MGHAGAIIAGGKGTADEK_11_12_p1'
+        assert results[0].pep1_id == 4 #  \
+               # '6_VAEmetETPHLIHKVALDPLTGPMPYQGR_11_MGHAGAIIAGGKGTADEK_11_12_p1'
         # peptide_ref from matched <SpectrumIdentificationItem> by crosslink_identification_id
-        assert results[0].pep2_id == \
-               '6_VAEmetETPHLIHKVALDPLTGPMPYQGR_11_MGHAGAIIAGGKGTADEK_11_12_p0'
+        assert results[0].pep2_id == 5 # \
+               # '6_VAEmetETPHLIHKVALDPLTGPMPYQGR_11_MGHAGAIIAGGKGTADEK_11_12_p0'
         assert results[0].charge_state == 5  # chargeState from <SpectrumIdentificationItem>
         assert results[0].pass_threshold  # passThreshold from <SpectrumIdentificationItem>
         assert results[0].rank == 1  # rank from <SpectrumIdentificationItem>

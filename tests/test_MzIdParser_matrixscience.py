@@ -34,12 +34,12 @@ def compare_db_sequence(results):
 
 def compare_peptide_evidence(results):
     assert len(results) == 1379
-    assert results[0].peptide_ref == 'peptide_67_1'  # peptide_ref from <PeptideEvidence>
-    assert results[0].dbsequence_ref == 'DBSeq_1_SCP_CHIOP'  # dbsequence_ref from <PeptideEvidence>
+    assert results[0].peptide_id == 0 #  'peptide_67_1'  # peptide_ref from <PeptideEvidence>
+    assert results[0].dbsequence_id == 'DBSeq_1_SCP_CHIOP'  # dbsequence_ref from <PeptideEvidence>
     assert results[0].pep_start == 1  # start from <PeptideEvidence>
     assert not results[0].is_decoy  # is_decoy from <PeptideEvidence>
-    assert results[1378].peptide_ref == 'peptide_1497_2_p2'  # peptide_ref from <PeptideEvidence>
-    assert results[1378].dbsequence_ref == 'DBSeq_1_LYSC_CHICK'  # dbsequence_ref from <PeptideEvidence>
+    assert results[1378].peptide_id == 285 # 'peptide_1497_2_p2'  # peptide_ref from <PeptideEvidence>
+    assert results[1378].dbsequence_id == 'DBSeq_1_LYSC_CHICK'  # dbsequence_ref from <PeptideEvidence>
     assert results[1378].pep_start == 80  # start from <PeptideEvidence>
     assert not results[1378].is_decoy  # is_decoy from <PeptideEvidence>
 
@@ -47,7 +47,7 @@ def compare_peptide_evidence(results):
 def compare_modified_peptide(results):
     assert len(results) == 286
 
-    assert results[0].id == 'peptide_67_1'  # id from <Peptide> id
+    assert results[0].id == 0 #  'peptide_67_1'  # id from <Peptide> id
     assert results[0].base_sequence == 'VATVSLPR'  # value of <PeptideSequence>
     assert results[0].mod_accessions == []
     assert results[0].mod_avg_mass_deltas == []
@@ -58,7 +58,7 @@ def compare_modified_peptide(results):
     assert results[0].crosslinker_pair_id is None  # value of cross-link acceptor/receiver cvParam
     assert results[0].crosslinker_accession is None
 
-    assert results[1].id == 'peptide_69_1'  # id from <Peptide> id # mascot seems to duplicate peptides
+    assert results[1].id == 1 #  'peptide_69_1'  # id from <Peptide> id # mascot seems to duplicate peptides
     assert results[1].base_sequence == 'VATVSLPR'  # value of <PeptideSequence>
     assert results[1].mod_accessions == []
     assert results[1].mod_avg_mass_deltas == []
@@ -69,7 +69,7 @@ def compare_modified_peptide(results):
     assert results[1].crosslinker_pair_id is None  # value of cross-link acceptor/receiver cvParam
     assert results[1].crosslinker_accession is None
 
-    assert results[284].id == 'peptide_1497_2_p1'  # id from <Peptide> id
+    assert results[284].id == 284 #  'peptide_1497_2_p1'  # id from <Peptide> id
     assert results[284].base_sequence == 'NLCNIPCSALLSSDITASVNCAK'  # value of <PeptideSequence>
     assert results[284].mod_accessions == [{'UNIMOD:108': 'Nethylmaleimide'}, {'UNIMOD:108': 'Nethylmaleimide'}]
     assert results[284].mod_avg_mass_deltas == [None, None]
@@ -80,7 +80,7 @@ def compare_modified_peptide(results):
     assert results[284].crosslinker_pair_id == '37.0'  # value of cross-link acceptor/receiver cvParam
     assert results[284].crosslinker_accession == 'UNIMOD:'  # the file has
 
-    assert results[285].id == 'peptide_1497_2_p2'  # id from <Peptide> id
+    assert results[285].id == 285 #  'peptide_1497_2_p2'  # id from <Peptide> id
     assert results[285].base_sequence == 'WWCNDGR'  # value of <PeptideSequence>
     assert results[285].mod_accessions == []
     assert results[285].mod_avg_mass_deltas == []

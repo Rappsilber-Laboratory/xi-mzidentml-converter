@@ -13,8 +13,8 @@ class Match(Base):
     spectra_data_id: Mapped[int] = mapped_column(Integer, nullable=True)  # nullable for csv data
     multiple_spectra_identification_id: Mapped[str] = mapped_column(Integer, nullable=True)
     multiple_spectra_identification_pc: Mapped[str] = mapped_column(CHAR, nullable=True)
-    pep1_id: Mapped[int] = mapped_column(Integer, nullable=False)
-    pep2_id: Mapped[int] = mapped_column(Integer, nullable=True)
+    pep1_id: Mapped[int] = mapped_column(Integer, index=True, nullable=False)
+    pep2_id: Mapped[int] = mapped_column(Integer, index=True, nullable=True)
     charge_state: Mapped[int] = mapped_column(Integer, nullable=True)
     pass_threshold: Mapped[bool] = mapped_column(BOOLEAN, nullable=False)
     rank: Mapped[int] = mapped_column(Integer, nullable=False)

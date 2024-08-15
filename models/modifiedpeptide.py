@@ -1,14 +1,14 @@
 from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy import ForeignKey, Text, Integer, JSON, FLOAT
+from sqlalchemy import ForeignKey, Text, Integer, JSON, FLOAT, Index
 from models.base import Base
 from typing import Optional, Any
 
 
 class ModifiedPeptide(Base):
     __tablename__ = "modifiedpeptide"
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
     upload_id: Mapped[str] = mapped_column(Integer, ForeignKey("upload.id"), index=True, primary_key=True,
                                            nullable=False)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
     base_sequence: Mapped[str] = mapped_column(Text, nullable=False)
     mod_accessions: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
     mod_avg_mass_deltas: Mapped[Optional[dict[str, Any]]] = mapped_column(JSON, nullable=True)
@@ -21,3 +21,11 @@ class ModifiedPeptide(Base):
     crosslinker_modmass: Mapped[float] = mapped_column(FLOAT, nullable=True)
     crosslinker_pair_id: Mapped[str] = mapped_column(Text, nullable=True)  # yes, it's a string
     crosslinker_accession: Mapped[str] = mapped_column(Text, nullable=True)
+# CREATE INDEX ix_modifiedpeptide_id ON public.modifiedpeptide USING btree (id);
+# CREATE INDEX modifiedpeptide_upload_id__id_seq_idx ON public.modifiedpeptide (upload_id,id, base_sequence);
+# CREATE INDEX modifiedpeptide_upload_id_linksite_idx ON public.modifiedpeptide (upload_id, link_site1);
+    __table_args__ = (
+        Index("ix_modifiedpeptide_id", "id"),
+        Index("modifiedpeptide_upload_id__id_seq_idx", "upload_id", "id", "base_sequence"),
+        Index("modifiedpeptide_upload_id_linksite_idx", "upload_id", "link_site1"),
+    )

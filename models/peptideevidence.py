@@ -13,12 +13,12 @@ class PeptideEvidence(Base):
     is_decoy: Mapped[bool] = mapped_column(BOOLEAN, nullable=True)
     __table_args__ = (
         ForeignKeyConstraint(
-            ("dbsequence_id", "upload_id"),
-            ("dbsequence.id", "dbsequence.upload_id"),
+            ("upload_id", "dbsequence_id"),
+            ("dbsequence.upload_id", "dbsequence.id"),
         ),
         ForeignKeyConstraint(
-            ("peptide_id", "upload_id"),
-            ("modifiedpeptide.id", "modifiedpeptide.upload_id"),
+            ("upload_id", "peptide_id"),
+            ("modifiedpeptide.upload_id", "modifiedpeptide.id"),
         ),
         # add index on upload_id, peptide_id
         Index("peptideevidence_upload_id_peptide_id_idx", "upload_id", "peptide_id"),

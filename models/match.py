@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy import ForeignKey, Text, FLOAT, JSON, BOOLEAN, Integer, ForeignKeyConstraint, CHAR
+from sqlalchemy import ForeignKey, Text, FLOAT, JSON, BOOLEAN, Integer, ForeignKeyConstraint, CHAR, Index
 from models.base import Base
 from typing import Optional, Any
 
@@ -9,6 +9,7 @@ class Match(Base):
     id: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
     upload_id: Mapped[int] = mapped_column(Integer, ForeignKey("upload.id"), index=True, primary_key=True,
                                            nullable=False)
+    id: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
     spectrum_id: Mapped[str] = mapped_column(Text, nullable=True)
     spectra_data_id: Mapped[int] = mapped_column(Integer, nullable=True)  # nullable for csv data
     multiple_spectra_identification_id: Mapped[str] = mapped_column(Integer, nullable=True)
@@ -29,16 +30,17 @@ class Match(Base):
              "spectrumidentificationprotocol.upload_id"],
         ),
         ForeignKeyConstraint(
-            ["pep1_id", "upload_id"],
-            ["modifiedpeptide.id", "modifiedpeptide.upload_id"],
+            [ "upload_id", "pep1_id",],
+            ["modifiedpeptide.upload_id", "modifiedpeptide.id"],
         ),
         ForeignKeyConstraint(
-            ["pep2_id", "upload_id"],
-            ["modifiedpeptide.id", "modifiedpeptide.upload_id"],
+            ["upload_id", "pep2_id"],
+            ["modifiedpeptide.upload_id", "modifiedpeptide.id", ],
         ),
         # ForeignKeyConstraint(
         # ["spectrum_id", "spectra_data_id", "upload_id"],
         # ["spectrum.id", "spectrum.spectra_data_id", "spectrum.upload_id"],
         # ),
+        Index("ix_match_id", "id"),
     )
 

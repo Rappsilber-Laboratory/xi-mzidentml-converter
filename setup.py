@@ -30,7 +30,7 @@ setup(
                 "relational database (PostgreSQL or SQLite) using sqlalchemy.",
     long_description_content_type="text/markdown",
     long_description=long_description,
-    author="Suresh Hewapathirana",
+    author="Colin Combe, Lars Kolbowski, Suresh Hewapathirana",
     license="'Apache 2.0",
     url="https://github.com/PRIDE-Archive/xi-mzidentml-converter",
     packages=find_packages(),

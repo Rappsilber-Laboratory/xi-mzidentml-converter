@@ -1,92 +1,148 @@
+"""Script to process mzIdentML files, typically to load their data into a relational database."""
 import argparse
-import sys
-import os
-import socket
-
-import requests
-import time
 import ftplib
-import logging.config
 import gc
+import logging.config
+import os
 import shutil
+import socket
+import sys
+import time
 from urllib.parse import urlparse
 
-from parser.MzIdParser import MzIdParser
-import logging.config
-from parser.APIWriter import APIWriter
-from config.config_parser import get_conn_str
-from parser.DatabaseWriter import DatabaseWriter
+import requests
+from sqlalchemy import create_engine
 
+# Import custom modules
+from config.config_parser import get_conn_str
+from parser.APIWriter import APIWriter
+from parser.DatabaseWriter import DatabaseWriter
+from parser.MzIdParser import MzIdParser, SqliteMzIdParser
+from parser.schema_validate import schema_validate
+
+# Configure logging
 logging_config_file = os.path.join(os.path.dirname(__file__), '../config/logging.ini')
 logging.config.fileConfig(logging_config_file)
 logger = logging.getLogger(__name__)
 
 
-def main():
+def parse_arguments():
+    """Parses command-line arguments."""
     parser = argparse.ArgumentParser(
         description='Process mzIdentML files in a dataset and load them into a relational database.')
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument('-p', '--pxid', nargs='+',
                        help='proteomeXchange accession, should be of the form PXDnnnnnn or numbers only', )
     group.add_argument('-f', '--ftp',
-                       help='process files from specified ftp location, e.g. ftp://ftp.jpostdb.org/JPST001914/')
+                       help='Process files from specified ftp location, e.g. ftp://ftp.jpostdb.org/JPST001914/')
     group.add_argument('-d', '--dir',
-                       help='process files in specified local directory, e.g. /home/user/data/JPST001914')
+                       help='Process files in specified local directory, e.g. /home/user/data/JPST001914')
+    group.add_argument('-v', '--validate',
+                       help='Validate mzIdentML file or files in specified folder against 1.2.0 or 1.3.0 XSD schema, '
+                            'and check for other errors, including in referencing of peaklists. '
+                            'If argument is directory all MzIdentmL files in it will be checked, '
+                            'but it exits after first fail.'
+                            'If its a specific file then this file will be checked.'
+                            'The referenced peaklist files must be present alongside the MzIdentML files,'
+                            'contained in the same directory as them.')
+
     parser.add_argument('-i', '--identifier',
-                        help='identifier to use for dataset (if providing '
-                             'proteome exchange accession these are always used instead and this arg is ignored)')
-    parser.add_argument('--dontdelete', action='store_true', help='Do not delete downloaded data after processing')
-    parser.add_argument('-t', '--temp', action='store_true', help='Temp folder to download data files into')
+                        help='Identifier to use for dataset (if providing '
+                             'proteomeXchange accession these are always used instead and this arg is ignored),'
+                             'if provbiding directory then default is the directory name')
+    parser.add_argument('--dontdelete', action='store_true',
+                        help="Don't delete downloaded data after processing")
+    parser.add_argument('-t', '--temp', action='store_true',
+                        help='Temp folder to download data files into (default: ~/mzId_convertor_temp)')
     parser.add_argument('-n', '--nopeaklist',
-                        help='No peak list files available, only works in comination with --dir arg',
+                        help='No peak list files available, only works in combination with --dir arg',
                         action='store_true')
-    parser.add_argument('-w', '--writer', help='Save data to database(-w db) or API(-w api), required.', required=True)
-    args = parser.parse_args()
+    parser.add_argument('-w', '--writer', help='Save data to database(-w db) or API(-w api)')
+
+    return parser.parse_args()
+
+
+def get_temp_dir(temp_arg):
+    """Returns the temporary directory for downloads."""
+    return os.path.expanduser(temp_arg) if temp_arg else os.path.expanduser('~/mzId_convertor_temp')
+
+
+def validate_writer_method(writer_method):
+    """Validates the writer method input."""
+    if writer_method and writer_method.lower() not in {'api', 'db'}:
+        raise ValueError('Writer method not supported! Please use "api" or "db".')
+
+
+def process_pxid(px_accessions, temp_dir, writer_method, dontdelete):
+    """Processes ProteomeXchange accessions."""
+    for px_accession in px_accessions:
+        convert_pxd_accession_from_pride(px_accession, temp_dir, writer_method, dontdelete)
+
+
+def process_ftp(ftp_url, temp_dir, project_identifier, writer_method, dontdelete):
+    """Processes data from an FTP URL."""
+    if not project_identifier:
+        project_identifier = urlparse(ftp_url).path.rsplit("/", 1)[-1]
+    convert_from_ftp(ftp_url, temp_dir, project_identifier, writer_method, dontdelete)
+
+
+def process_dir(local_dir, project_identifier, writer_method, nopeaklist):
+    """Processes data from a local directory."""
+    if not project_identifier:
+        project_identifier = local_dir.rsplit("/", 1)[-1]
+    convert_dir(local_dir, project_identifier, writer_method, nopeaklist=nopeaklist)
+
+
+def validate(validate_arg, tmpdir):
+    """Validates mzIdentML files against the XSD schema, then checks for other errors."""
+    if os.path.isdir(validate_arg):
+        print(f'Validating directory: {validate_arg}')
+        for file in os.listdir(validate_arg):
+            if file.endswith(".mzid"):
+                file_to_validate = os.path.join(validate_arg, file)
+                if validate_file(file_to_validate, tmpdir):
+                    print(f'Validation successful for file {file_to_validate}.')
+                else:
+                    print(f'Validation failed for file {file_to_validate}. Exiting.')
+                    sys.exit(1)
+        print(f'SUCCESS! Directory {validate_arg} validation complete. Exciting.')
+    else:
+        if not validate_file(validate_arg, tmpdir):
+            print(f'Validation failed for file {validate_arg}. Exiting.')
+            sys.exit(1)
+        print(f'SUCCESS! File {validate_arg} validation complete. Exciting.')
+
+    sys.exit(0)
+
+
+def main():
+    """Main function to execute script logic."""
+    args = parse_arguments()
+    temp_dir = get_temp_dir(args.temp)
+    validate_writer_method(args.writer)
+
     try:
-        logger.info("process_dataset.py is running!")
-        print("process_dataset.py is running!")
-        if args.temp:
-            temp_dir = os.path.expanduser(args.temp)
-        else:
-            temp_dir = os.path.expanduser('~/mzId_convertor_temp')
-
-        writer_method = args.writer
-        if not (writer_method.lower() == 'api' or writer_method.lower() == 'db'):
-            raise ValueError('Writer method not supported! please use "api" or "db"')
-
         if args.pxid:
-            px_accessions = args.pxid
-            for px_accession in px_accessions:
-                # convert_pxd_accession(px_accession, temp_dir, args.dontdelete)
-                convert_pxd_accession_from_pride(px_accession, temp_dir, writer_method, args.dontdelete)
+            process_pxid(args.pxid, temp_dir, args.writer, args.dontdelete)
         elif args.ftp:
-            ftp_url = args.ftp
-            if args.identifier:
-                project_identifier = args.identifier
-            else:
-                parsed_url = urlparse(ftp_url)
-                project_identifier = parsed_url.path.rsplit("/", 1)[-1]
-            convert_from_ftp(ftp_url, temp_dir, project_identifier, writer_method, args.dontdelete)
-        else:
-            local_dir = args.dir
-            if args.identifier:
-                project_identifier = args.identifier
-            else:
-                project_identifier = local_dir.rsplit("/", 1)[-1]
-            convert_dir(local_dir, project_identifier, writer_method, nopeaklist=args.nopeaklist)
+            process_ftp(args.ftp, temp_dir, args.identifier, args.writer, args.dontdelete)
+        elif args.dir:
+            process_dir(args.dir, args.identifier, args.writer, args.nopeaklist)
+        elif args.validate:
+            validate(args.validate, temp_dir)
         sys.exit(0)
     except Exception as ex:
         logger.error(ex)
         sys.exit(1)
 
 
-def convert_pxd_accession(px_accession, temp_dir, dont_delete=False):
-    # get ftp location from PX
-    px_url = 'https://proteomecentral.proteomexchange.org/cgi/GetDataset?ID=' + px_accession + '&outputMode=JSON'
-    logger.info('GET request to ProteomeExchange: ' + px_url)
+def convert_pxd_accession(px_accession, temp_dir, writer_method, dontdelete):
+    """get ftp location from PX"""
+    px_url = f'https://proteomecentral.proteomexchange.org/cgi/GetDataset?ID={px_accession}&outputMode=JSON'
+    logger.info(f'GET request to ProteomeExchange: {px_url}')
     px_response = requests.get(px_url)
-    r = requests.get(px_url)
-    if r.status_code == 200:
+
+    if px_response.status_code == 200:
         logger.info('ProteomeExchange returned status code 200')
         px_json = px_response.json()
         ftp_url = None
@@ -94,143 +150,118 @@ def convert_pxd_accession(px_accession, temp_dir, dont_delete=False):
             # name check is necessary because some things have wrong acc, e.g. PXD006574
             if dataSetLink['accession'] == "MS:1002852" or dataSetLink['name'] == "Dataset FTP location":
                 ftp_url = dataSetLink['value']
-                convert_from_ftp(ftp_url, temp_dir, px_accession, dont_delete)
+                convert_from_ftp(ftp_url, temp_dir, px_accession, writer_method, dontdelete)
                 break
         if not ftp_url:
             raise Exception('Error: Dataset FTP location not found in ProteomeXchange response')
     else:
-        raise Exception('Error: ProteomeXchange returned status code ' + str(px_response.status_code))
+        raise Exception(f'Error: ProteomeXchange returned status code {px_response.status_code}')
 
 
-def convert_pxd_accession_from_pride(px_accession, temp_dir, writer_method, dont_delete=False):
-    # get ftp location from PRIDE API
-    px_url = 'https://www.ebi.ac.uk/pride/ws/archive/v2/files/byProject?accession=' + px_accession
-    logger.info('GET request to PRIDE API: ' + px_url)
+def convert_pxd_accession_from_pride(px_accession, temp_dir, writer_method, dontdelete):
+    """get ftp location from PRIDE API"""
+    px_url = f'https://www.ebi.ac.uk/pride/ws/archive/v2/files/byProject?accession={px_accession}'
+    logger.info(f'GET request to PRIDE API: {px_url}')
     pride_response = requests.get(px_url)
-    r = requests.get(px_url)
-    if r.status_code == 200:
+
+    if pride_response.status_code == 200:
         logger.info('PRIDE API returned status code 200')
         pride_json = pride_response.json()
         ftp_url = None
 
-        if len(pride_json) > 0:
-            for protocol in pride_json[0]['publicFileLocations']:
+        if pride_json:
+            for protocol in pride_json[0].get('publicFileLocations', []):
                 if protocol['name'] == "FTP Protocol":
-
-                    # Parse the FTP path
                     parsed_url = urlparse(protocol['value'])
-
-                    # Split the path into segments
-                    path_segments = parsed_url.path.split('/')
-
-                    # Construct the parent folder path
-                    parent_folder = parsed_url.scheme + '://' + parsed_url.netloc
-
-                    for segment in path_segments[:-1]:  # Exclude the filename with extension part
-                        parent_folder += segment + '/'
+                    parent_folder = f"{parsed_url.scheme}://{parsed_url.netloc}" + "/".join(
+                        parsed_url.path.split('/')[:-1])
+                    logger.info(f'PRIDE FTP path : {parent_folder}')
                     ftp_url = parent_folder
-
-                    logger.info('PRIDE FTP path : ' + parent_folder)
                     break
-        convert_from_ftp(ftp_url, temp_dir, px_accession, writer_method, dont_delete)
-        if not ftp_url:
+        if ftp_url:
+            convert_from_ftp(ftp_url, temp_dir, px_accession, writer_method, dontdelete)
+        else:
             raise Exception('Error: Public File location not found in PRIDE API response')
     else:
-        raise Exception('Error: PRIDE API returned status code ' + str(pride_response.status_code))
+        raise Exception(f'Error: PRIDE API returned status code {pride_response.status_code}')
 
 
-def convert_from_ftp(ftp_url, temp_dir, project_identifier, writer_method, dont_delete):
+def convert_from_ftp(ftp_url, temp_dir, project_identifier, writer_method, dontdelete):
+    """Downloads and converts data from an FTP URL."""
     if not ftp_url.startswith('ftp://'):
         raise Exception('Error: FTP location must start with ftp://')
-    if not os.path.isdir(temp_dir):
-        try:
-            os.mkdir(temp_dir)
-        except OSError as e:
-            logger.error('Failed to create temp directory ' + temp_dir)
-            logger.error('Error: ' + e.strerror)
-            raise e
-    logger.info('FTP url: ' + ftp_url)
-    parsed_url = urlparse(ftp_url)
+
+    # Create temp directory if not exists
+    os.makedirs(temp_dir, exist_ok=True)
+    logger.info(f'FTP url: {ftp_url}')
+
     path = os.path.join(temp_dir, project_identifier)
-    try:
-        os.mkdir(path)
-    except OSError:
-        pass
-    ftp_ip = socket.getaddrinfo(parsed_url.hostname, 21)[0][4][0]
-    files = get_ftp_file_list(ftp_ip, parsed_url.path)
+    os.makedirs(path, exist_ok=True)
+
+    ftp_ip = socket.getaddrinfo(urlparse(ftp_url).hostname, 21)[0][4][0]
+    files = get_ftp_file_list(ftp_ip, urlparse(ftp_url).path)
     for f in files:
-        # check file not already in temp dir
-        if not (os.path.isfile(os.path.join(str(path), f))
-                or f.lower == "generated"  # dunno what these files are but they seem to make ftp break
-                or f.lower().endswith('raw')
-                or f.lower().endswith('raw.gz')
-                or f.lower().endswith('all.zip')
-                or f.lower().endswith('csv')
-                or f.lower().endswith('txt')):
-            logger.info('Downloading ' + f + ' to ' + str(path))
+        if not (os.path.isfile(os.path.join(path, f))
+                or f.lower() in {"generated", "raw", "raw.gz", "all.zip", "csv", "txt"}):
+            logger.info(f'Downloading {f} to {path}')
             ftp = get_ftp_login(ftp_ip)
             try:
-                ftp.cwd(parsed_url.path)
-                ftp.retrbinary("RETR " + f, open(os.path.join(str(path), f), 'wb').write)
+                ftp.cwd(urlparse(ftp_url).path)
+                ftp.retrbinary(f"RETR {f}", open(os.path.join(path, f), 'wb').write)
                 ftp.quit()
             except ftplib.error_perm as e:
                 ftp.quit()
-                # error_msg = "%s: %s" % (f, e.args[0])
-                # self.logger.error(error_msg)
                 raise e
+
     convert_dir(path, project_identifier, writer_method)
-    if not dont_delete:
-        # remove downloaded files
+
+    if not dontdelete:
         try:
             shutil.rmtree(path)
         except OSError as e:
-            logger.error('Failed to delete temp directory ' + str(path))
-            logger.error('Error: ' + e.strerror)
+            logger.error(f'Failed to delete temp directory {path}')
             raise e
 
 
 def get_ftp_login(ftp_ip):
-    time.sleep(10)
+    """Logs in to an FTP server."""
+    time.sleep(10)  # Delay to avoid rate limiting
     try:
         ftp = ftplib.FTP(ftp_ip)
         ftp.login()  # Uses password: anonymous@
         return ftp
     except ftplib.all_errors as e:
-        logger.error('FTP fail at ' + time.strftime("%c"))
+        logger.error(f'FTP login failed at {time.strftime("%c")}')
         raise e
 
 
 def get_ftp_file_list(ftp_ip, ftp_dir):
+    """Gets a list of files from an FTP directory."""
     ftp = get_ftp_login(ftp_ip)
     try:
         ftp.cwd(ftp_dir)
     except ftplib.error_perm as e:
-        error_msg = "%s: %s" % (ftp_dir, e.args[0])
-        logger.error(error_msg)
+        logger.error(f"{ftp_dir}: {e}")
         ftp.quit()
         raise e
     try:
-        filelist = ftp.nlst()
-    except ftplib.error_perm as resp:
-        if str(resp) == "550 No files found":
-            logger.info("FTP: No files in this directory")
+        return ftp.nlst()
+    except ftplib.error_perm as e:
+        if str(e) == "550 No files found":
+            logger.info(f"FTP: No files in {ftp_dir}")
         else:
-            error_msg = "%s: %s" % (ftp_dir, ftplib.error_perm.args[0])
-            logger.error(error_msg)
-        raise resp
-    ftp.close()
-    return filelist
+            logger.error(f"{ftp_dir}: {e}")
+        raise e
+    finally:
+        ftp.close()
 
 
 def convert_dir(local_dir, project_identifier, writer_method, nopeaklist=False):
-    # logging.basicConfig(level=logging.DEBUG,
-    #                     format='%(asctime)s %(levelname)s %(name)s %(message)s')
-    # logger = logging.getLogger(__name__)
-    peaklist_dir = local_dir if not nopeaklist else None
-    #  iterate over files in local_dir
+    """Converts files in a local directory."""
+    peaklist_dir = None if nopeaklist else local_dir
     for file in os.listdir(local_dir):
-        if file.endswith(".mzid") or file.endswith(".mzid.gz"):
-            logger.info("Processing " + file)
+        if file.endswith((".mzid", ".mzid.gz")):
+            logger.info(f"Processing {file}")
             conn_str = get_conn_str()
             if writer_method.lower() == 'api':
                 writer = APIWriter(pxid=project_identifier)
@@ -241,12 +272,59 @@ def convert_dir(local_dir, project_identifier, writer_method, nopeaklist=False):
                 id_parser.parse()
                 # logger.info(id_parser.warnings + "\n")
             except Exception as e:
-                logging.error("Error parsing " + file)
-                logging.exception(e)
+                logger.error(f"Error parsing {file}")
+                logger.exception(e)
                 raise e
             gc.collect()
-        else:
-            continue
+
+
+def validate_file(filepath, tmpdir):
+    """
+    Validates mzIdentML files against the 1.2.0 or 1.3.0 schema, then checks for some other errors.
+
+    Parameters
+    ----------
+    filepath : str
+        The path to the mzIdentML file to be validated.
+    tmpdir : str
+        The temporary directory to use for validation - an Sqlite DB is created here.
+
+    Returns
+    -------
+    bool
+        True if the file is valid, False otherwise.
+    """
+    print(f'Validating file {filepath}.')
+
+    local_dir = os.path.dirname(filepath)
+    file = os.path.basename(filepath)
+
+    if schema_validate(filepath):
+        print(f'File {filepath} is schema valid.')
+
+        filewithoutext = os.path.splitext(file)[0]
+        test_database = os.path.join(str(tmpdir), f'{filewithoutext}.db')
+        # delete the test database if it exists
+        if os.path.exists(test_database):
+            os.remove(test_database)
+        conn_str = f'sqlite:///{test_database}'
+        engine = create_engine(conn_str)
+
+        writer = DatabaseWriter(conn_str, upload_id=1, pxid="Validation")
+        id_parser = SqliteMzIdParser(os.path.join(local_dir, file), local_dir, local_dir, writer, logger)
+        try:
+            id_parser.parse()
+        except Exception as e:
+            print(f"Error parsing {filepath}")
+            print(e)
+            return False
+
+    else:
+        print(f'File {filepath} is schema invalid.')
+        return False
+
+    return True
+
 
 
 if __name__ == "__main__":

@@ -22,7 +22,7 @@ def drop_db(connection_str):
 def create_schema(connection_str):
     engine = create_engine(connection_str)  # , echo=True)
     Base.metadata.create_all(engine)
-    logging.info(Base.metadata.tables)
+    # logging.info(Base.metadata.tables)
     engine.dispose()
 
 

@@ -4,6 +4,7 @@ import ftplib
 import gc
 import logging.config
 import os
+import orjson
 import shutil
 import socket
 import sys
@@ -11,7 +12,7 @@ import time
 from urllib.parse import urlparse
 
 import requests
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 
 # Import custom modules
 from config.config_parser import get_conn_str
@@ -45,6 +46,8 @@ def parse_arguments():
                             'If its a specific file then this file will be checked.'
                             'The referenced peaklist files must be present alongside the MzIdentML files,'
                             'contained in the same directory as them.')
+    group.add_argument('--seqsandresiduepairs',
+                       help='output JSON with sequences and residue pairs')
 
     parser.add_argument('-i', '--identifier',
                         help='Identifier to use for dataset (if providing '
@@ -115,6 +118,19 @@ def validate(validate_arg, tmpdir):
     sys.exit(0)
 
 
+def json_sequences_and_residue_pairs(filepath, tmpdir):
+    """Prints json of sequences and residue pairs from mzIdentML files
+    Parameters
+    ----------
+    filepath : str
+        The path to the mzIdentML file to be validated.
+    tmpdir : str
+        The temporary directory to use for validation - an Sqlite DB is created here.
+    """
+
+    print(orjson.dumps(sequences_and_residue_pairs(filepath, tmpdir)))
+
+
 def main():
     """Main function to execute script logic."""
     args = parse_arguments()
@@ -130,6 +146,8 @@ def main():
             process_dir(args.dir, args.identifier, args.writer, args.nopeaklist)
         elif args.validate:
             validate(args.validate, temp_dir)
+        elif args.seqsandresiduepairs:
+            json_sequences_and_residue_pairs(args.seqsandresiduepairs, temp_dir)
         sys.exit(0)
     except Exception as ex:
         logger.error(ex)
@@ -201,8 +219,13 @@ def convert_from_ftp(ftp_url, temp_dir, project_identifier, writer_method, dontd
     ftp_ip = socket.getaddrinfo(urlparse(ftp_url).hostname, 21)[0][4][0]
     files = get_ftp_file_list(ftp_ip, urlparse(ftp_url).path)
     for f in files:
-        if not (os.path.isfile(os.path.join(path, f))
-                or f.lower() in {"generated", "raw", "raw.gz", "all.zip", "csv", "txt"}):
+        if not (os.path.isfile(os.path.join(str(path), f))
+                or f.lower == "generated"  # dunno what these files are but they seem to make ftp break
+                or f.lower().endswith('raw')
+                or f.lower().endswith('raw.gz')
+                or f.lower().endswith('all.zip')
+                or f.lower().endswith('csv')
+                or f.lower().endswith('txt')):
             logger.info(f'Downloading {f} to {path}')
             ftp = get_ftp_login(ftp_ip)
             try:
@@ -324,6 +347,71 @@ def validate_file(filepath, tmpdir):
         return False
 
     return True
+
+
+def sequences_and_residue_pairs(filepath, tmpdir):
+    """
+    get sequences and residue pairs from mzIdentML files
+
+    Parameters
+    ----------
+    filepath : str
+        The path to the mzIdentML file to be validated.
+    tmpdir : str
+        The temporary directory to use for validation - an Sqlite DB is created here.
+
+    Returns
+    -------
+    objects
+          """
+
+    # if os.path.isdir(filepath):
+    #     for file in os.listdir(filepath):
+    #         if file.endswith(".mzid"):
+    #             file_to_process = os.path.join(filepath, file)
+    #             sequences_and_residue_pairs(file_to_process, tmpdir)
+
+
+    local_dir = os.path.dirname(filepath)
+    file = os.path.basename(filepath)
+
+    filewithoutext = os.path.splitext(file)[0]
+    test_database = os.path.join(str(tmpdir), f'{filewithoutext}.db')
+    # delete the test database if it exists
+    if os.path.exists(test_database):
+        os.remove(test_database)
+    conn_str = f'sqlite:///{test_database}'
+    engine = create_engine(conn_str)
+
+    writer = DatabaseWriter(conn_str, upload_id=1, pxid="Validation")
+    id_parser = SqliteMzIdParser(os.path.join(local_dir, file), local_dir, local_dir, writer, logger)
+    try:
+        id_parser.parse()
+    except Exception as e:
+        print(f"Error parsing {filepath}")
+        print(e)
+
+    with engine.connect() as conn:
+        try:
+            sql = text("""
+            SELECT dbseq.id, u.identification_file_name as file, dbseq.sequence, dbseq.accession
+            FROM upload AS u
+            JOIN dbsequence AS dbseq ON u.id = dbseq.upload_id
+            INNER JOIN peptideevidence pe ON dbseq.id = pe.dbsequence_id AND dbseq.upload_id = pe.upload_id
+            WHERE u.id = 1
+            AND pe.is_decoy = false
+            GROUP BY dbseq.id, dbseq.sequence, dbseq.accession, u.identification_file_name;
+            """)
+            rs = conn.execute(sql)
+            mzid_rows = rs.fetchall()
+
+            logging.info("Successfully fetched sequences")
+        except Exception as error:
+            logging.error(error)
+        finally:
+            logging.info('Database connection closed.')
+
+    return mzid_rows
 
 
 

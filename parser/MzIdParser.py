@@ -1012,6 +1012,19 @@ class SqliteMzIdParser(MzIdParser):
     def write_new_upload(self):
         """Overrides base class function - not needed for xiSPEC."""
         self.writer.upload_id = 1
+        try:
+            filename = os.path.basename(self.mzid_path)
+            upload_data = {
+                'identification_file_name': filename,
+                'project_id': self.writer.pxid,
+                'identification_file_name_clean': re.sub(r'[^0-9a-zA-Z-]+', '-', filename)
+            }
+            table = 'upload'
+
+            response = self.writer.write_data(table, upload_data)
+        except SQLAlchemyError as e:
+            print(f"Error during database insert: {e}")
+
 
 class XiSpecMzIdParser(MzIdParser):
 

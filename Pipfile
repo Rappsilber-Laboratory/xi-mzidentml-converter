@@ -16,6 +16,7 @@ psycopg2-binary = "*"
 sqlalchemy = "2.0.21"
 sqlalchemy-utils = "*"
 obonet = "*"
+orjson = "*"
 #Security modules
 certifi = ">=2023.7.22"
 python-multipart = ">=0.0.7"

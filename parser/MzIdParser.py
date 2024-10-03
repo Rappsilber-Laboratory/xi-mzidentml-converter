@@ -47,6 +47,7 @@ class MzIdParser:
         self.sip_ref_to_sip_id_lookup = {}  # sip_ref to sip_id lookup
         self.sil_ref_to_protocol_id_lookup = {}  # sip_ref to sip_id lookup
         self.pep_ref_to_pep_id_lookup = {}  # peptide_ref to peptide_id lookup
+        self.dbseqs = {}
 
         self.temp_dir = temp_dir
         if not self.temp_dir.endswith('/'):
@@ -91,6 +92,7 @@ class MzIdParser:
         self.parse_db_sequences()  # overridden (empty function) in xiSPEC subclass
         self.parse_peptides()
         self.parse_peptide_evidences()
+        self.check_target_proteins_have_sequence()
         self.main_loop()
 
         self.fill_in_missing_scores()  # empty here, overridden in xiSPEC subclass to do stuff
@@ -465,11 +467,9 @@ class MzIdParser:
                 db_sequence_data['sequence'] = db_sequence["Seq"]
             elif "length" in db_sequence:
                 db_sequence_data['sequence'] = "X" * db_sequence["length"]
-            else:
-                # todo: get sequence
-                db_sequence_data['sequence'] = ""
 
             db_sequences.append(db_sequence_data)
+            self.dbseqs[db_id] = db_sequence_data
 
         self.writer.write_data('dbsequence', db_sequences)
 
@@ -550,6 +550,12 @@ class MzIdParser:
                     raise MzIdParseException(f'Crosslinker pair ids do not match for peptide {pep_id}, higher order '
                                              f'crosslinks, including multiple looplinks in peptide not supported')
 
+            # link site validity check
+            if link_site1 is not None and link_site1 < 0:
+                raise MzIdParseException(f'Link site for peptide {pep_id} is negative')
+            if link_site2 is not None and link_site2 < 0:
+                raise MzIdParseException(f'Link site for peptide {pep_id} is negative')
+
             peptide_data = {
                 'id': peptide_index,
                 # 'ref': peptide['id'],
@@ -588,10 +594,14 @@ class MzIdParser:
         self.logger.info(
             f'parse peptides - done. Time: {round(time() - start_time, 2)} sec')
 
+
     def parse_peptide_evidences(self):
         """Parse and write the peptide evidences."""
         start_time = time()
         self.logger.info('parse peptide evidences - start')
+
+        for db_seq in self.dbseqs.values():
+            db_seq['is_decoy'] = False
 
         pep_evidences = []
         for pep_ev_id in self.mzid_reader._offset_index["PeptideEvidence"].keys():
@@ -605,6 +615,9 @@ class MzIdParser:
             is_decoy = False
             if "isDecoy" in peptide_evidence:
                 is_decoy = peptide_evidence["isDecoy"]  # isDecoy att, optional
+                if is_decoy:
+                    self.dbseqs[peptide_evidence["dBSequence_ref"]][is_decoy] = True
+
 
             pep_ev_data = {
                 'upload_id': self.writer.upload_id,
@@ -636,6 +649,15 @@ class MzIdParser:
 
         self.logger.info('parse peptide evidences - done. Time: {} sec'.format(
             round(time() - start_time, 2)))
+
+    def check_target_proteins_have_sequence(self):
+        """
+        Check that all target proteins have a sequence.
+        """
+
+        for db_seq in self.dbseqs.values():
+            if 'sequence' not in db_seq and not db_seq['is_decoy']:
+                raise MzIdParseException(f"DBSequence {db_seq['accession']} has no sequence.")
 
     def main_loop(self):
         """Parse the <SpectrumIdentificationResult>s and <SpectrumIdentificationItem>s within."""
@@ -1037,9 +1059,9 @@ class XiSpecMzIdParser(MzIdParser):
         """Overrides base class function - not needed for xiSPEC."""
         pass
 
-    def parse_db_sequences(self):
-        """Overrides base class function - not needed for xiSPEC."""
-        pass
+    # def parse_db_sequences(self):
+    #     """Overrides base class function - not needed for xiSPEC."""
+    #     pass
 
     def fill_in_missing_scores(self):
         # Fill missing scores with

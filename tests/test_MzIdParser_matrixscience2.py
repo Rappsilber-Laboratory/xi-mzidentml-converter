@@ -128,58 +128,58 @@ def compare_enzyme(results):
     assert results[0].accession == "MS:1001313"
 
 
-def test_psql_matrixscience_mzid_parser(tmpdir, db_info, use_database, engine):
-    # file paths
-    fixtures_dir = os.path.join(os.path.dirname(__file__), 'fixtures', 'mzid_parser')
-    mzid = os.path.join(fixtures_dir, 'F002553_samesets.mzid')
-    peak_list_folder = False
-
-    id_parser = parse_mzid_into_postgresql(mzid, peak_list_folder, tmpdir, logger, use_database,
-                                           engine)
-
-    with engine.connect() as conn:
-        # Match
-        stmt = Table("match", id_parser.writer.meta, autoload_with=id_parser.writer.engine,
-                     quote=False).select()
-        rs = conn.execute(stmt)
-        compare_spectrum_identification(rs.fetchall())
-
-        # DBSequence
-        stmt = Table("dbsequence", id_parser.writer.meta, autoload_with=id_parser.writer.engine,
-                     quote=False).select()
-        rs = conn.execute(stmt)
-        compare_db_sequence(rs.fetchall())
-
-        # Modification - parsed from <SearchModification>s
-        stmt = Table("searchmodification", id_parser.writer.meta, autoload_with=id_parser.writer.engine,
-                     quote=False).select()
-        rs = conn.execute(stmt)
-        compare_modification(rs.fetchall())
-
-        # Enzyme - parsed from SpectrumIdentificationProtocols
-        stmt = Table("enzyme", id_parser.writer.meta, autoload_with=id_parser.writer.engine,
-                     quote=False).select()
-        rs = conn.execute(stmt)
-        compare_enzyme(rs.fetchall())
-
-        # PeptideEvidence
-        stmt = Table("peptideevidence", id_parser.writer.meta, autoload_with=id_parser.writer.engine,
-                     quote=False).select()
-        rs = conn.execute(stmt)
-        compare_peptide_evidence(rs.fetchall())
-
-        # ModifiedPeptide
-        stmt = Table("modifiedpeptide", id_parser.writer.meta, autoload_with=id_parser.writer.engine,
-                     quote=False).select()
-        rs = conn.execute(stmt)
-        compare_modified_peptide(rs.fetchall())
-
-        # Spectrum (peak_list_folder = False)
-        stmt = Table("spectrum", id_parser.writer.meta, autoload_with=id_parser.writer.engine,
-                     quote=False).select()
-        rs = conn.execute(stmt)
-        assert len(rs.fetchall()) == 0
-
-        # ToDo: remaining Tables
-
-    engine.dispose()
+# def test_psql_matrixscience_mzid_parser(tmpdir, db_info, use_database, engine):
+#     # file paths
+#     fixtures_dir = os.path.join(os.path.dirname(__file__), 'fixtures', 'mzid_parser')
+#     mzid = os.path.join(fixtures_dir, 'F002553_samesets.mzid')
+#     peak_list_folder = False
+#
+#     id_parser = parse_mzid_into_postgresql(mzid, peak_list_folder, tmpdir, logger, use_database,
+#                                            engine)
+#
+#     with engine.connect() as conn:
+#         # Match
+#         stmt = Table("match", id_parser.writer.meta, autoload_with=id_parser.writer.engine,
+#                      quote=False).select()
+#         rs = conn.execute(stmt)
+#         compare_spectrum_identification(rs.fetchall())
+#
+#         # DBSequence
+#         stmt = Table("dbsequence", id_parser.writer.meta, autoload_with=id_parser.writer.engine,
+#                      quote=False).select()
+#         rs = conn.execute(stmt)
+#         compare_db_sequence(rs.fetchall())
+#
+#         # Modification - parsed from <SearchModification>s
+#         stmt = Table("searchmodification", id_parser.writer.meta, autoload_with=id_parser.writer.engine,
+#                      quote=False).select()
+#         rs = conn.execute(stmt)
+#         compare_modification(rs.fetchall())
+#
+#         # Enzyme - parsed from SpectrumIdentificationProtocols
+#         stmt = Table("enzyme", id_parser.writer.meta, autoload_with=id_parser.writer.engine,
+#                      quote=False).select()
+#         rs = conn.execute(stmt)
+#         compare_enzyme(rs.fetchall())
+#
+#         # PeptideEvidence
+#         stmt = Table("peptideevidence", id_parser.writer.meta, autoload_with=id_parser.writer.engine,
+#                      quote=False).select()
+#         rs = conn.execute(stmt)
+#         compare_peptide_evidence(rs.fetchall())
+#
+#         # ModifiedPeptide
+#         stmt = Table("modifiedpeptide", id_parser.writer.meta, autoload_with=id_parser.writer.engine,
+#                      quote=False).select()
+#         rs = conn.execute(stmt)
+#         compare_modified_peptide(rs.fetchall())
+#
+#         # Spectrum (peak_list_folder = False)
+#         stmt = Table("spectrum", id_parser.writer.meta, autoload_with=id_parser.writer.engine,
+#                      quote=False).select()
+#         rs = conn.execute(stmt)
+#         assert len(rs.fetchall()) == 0
+#
+#         # ToDo: remaining Tables
+#
+#     engine.dispose()

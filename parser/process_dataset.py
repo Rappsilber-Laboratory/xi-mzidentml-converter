@@ -7,7 +7,6 @@ import os
 import sqlite3
 import traceback
 
-import orjson
 import shutil
 import socket
 import sys
@@ -127,7 +126,6 @@ def json_sequences_and_residue_pairs(filepath, tmpdir):
         The temporary directory to use for validation - an Sqlite DB is created here if given,
         otherwise an in-memory sqlite DB is used.
     """
-    local_dir = os.path.dirname(filepath)
     file = os.path.basename(filepath)
     filewithoutext = os.path.splitext(file)[0]
     temp_database = os.path.join(str(tmpdir), f'{filewithoutext}.db')
@@ -219,9 +217,14 @@ def json_sequences_and_residue_pairs(filepath, tmpdir):
             WHERE mp1.link_site1 > 0 AND mp2.link_site1 > 0 AND pe1.is_decoy = false AND pe2.is_decoy = false
             AND si.pass_threshold = true
             GROUP BY pe1.dbsequence_id , dbs1.accession, (pe1.pep_start + mp1.link_site1 - 1), pe2.dbsequence_id, dbs2.accession , (pe2.pep_start + mp2.link_site1 - 1)
-            ORDER BY pe1.dbsequence_id , (pe1.pep_start + mp1.link_site1 - 1), pe2.dbsequence_id, (pe2.pep_start + mp2.link_site1 - 1)
             ;"""
+        #     ORDER BY pe1.dbsequence_id , (pe1.pep_start + mp1.link_site1 - 1), pe2.dbsequence_id, (pe2.pep_start + mp2.link_site1 - 1)
+        #
+        # time sql execution
+        start_time = time.time()
         cur.execute(sql)
+        elapsed_time = time.time() - start_time
+        logging.info(f"residue pair SQL execution time: {elapsed_time}")
         rp_rows = cur.fetchall()
     except (Exception, sqlite3.DatabaseError) as error:
         raise error
@@ -469,8 +472,8 @@ def read_sequences_and_residue_pairs(filepath, upload_id, conn_str):
         The path to the mzIdentML file to be validated.
     upload_id : int
         The upload id to use for the sequences and residue pairs.
-    sqlite_engine : sqlalchemy.engine.base.Connection
-        The sqlite engine to use for the sequences and residue pairs.
+    conn_str : str
+        The connection string to use for the sqlite database.
 
     Returns
     -------
@@ -484,7 +487,7 @@ def read_sequences_and_residue_pairs(filepath, upload_id, conn_str):
         id_parser.parse()
     except Exception as e:
         print(f"Error parsing {filepath}")
-        raise(e)
+        raise e
 
 
 

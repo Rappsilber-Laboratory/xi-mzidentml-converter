@@ -13,6 +13,7 @@ import sys
 import time
 from urllib.parse import urlparse
 
+import orjson
 import requests
 from sqlalchemy import create_engine, text
 
@@ -65,7 +66,7 @@ def parse_arguments():
                         help="Don't delete downloaded data after processing")
     parser.add_argument('-t', '--temp', action='store_true',
                         help='Temp folder to download data files into or to create temp sqlite DB in.'
-                             '(default: ~/mzId_convertor_temp)')
+                             '(default: ~/mzid_converter_temp)')
     parser.add_argument('-n', '--nopeaklist',
                         help='No peak list files available, only works in combination with --dir arg',
                         action='store_true')
@@ -117,6 +118,9 @@ def validate(validate_arg, tmpdir):
 
 
 def json_sequences_and_residue_pairs(filepath, tmpdir):
+    return orjson.dumps(sequences_and_residue_pairs(filepath, tmpdir))
+
+def sequences_and_residue_pairs(filepath, tmpdir):
     """Prints json of sequences and residue pairs from mzIdentML files
     Parameters
     ----------
@@ -170,40 +174,13 @@ def json_sequences_and_residue_pairs(filepath, tmpdir):
             GROUP BY dbseq.id, dbseq.sequence, dbseq.accession, u.identification_file_name;
             """)
             rs = conn.execute(sql)
-            seq_rows = rs.fetchall()
+            seq_rows = rs.mappings().all()
+            seq_rows = [dict(row) for row in seq_rows]
+            # seq_rows = rs.fetchall()
             logging.info("Successfully fetched sequences")
 
             # get residue pairs
-            # sql = text("""SELECT group_concat(si.id) as match_ids, group_concat(u.identification_file_name) as files,
-            # pe1.dbsequence_id as prot1, dbs1.accession as prot1_acc, (pe1.pep_start + mp1.link_site1 - 1) as pos1,
-            # pe2.dbsequence_id as prot2, dbs2.accession as prot2_acc, (pe2.pep_start + mp2.link_site1 - 1) as pos2
-            # FROM match si INNER JOIN
-            # modifiedpeptide mp1 ON si.pep1_id = mp1.id AND si.upload_id = mp1.upload_id INNER JOIN
-            # peptideevidence pe1 ON mp1.id = pe1.peptide_id AND mp1.upload_id = pe1.upload_id INNER JOIN
-            # dbsequence dbs1 ON pe1.dbsequence_id = dbs1.id AND pe1.upload_id = dbs1.upload_id INNER JOIN
-            # modifiedpeptide mp2 ON si.pep2_id = mp2.id AND si.upload_id = mp2.upload_id INNER JOIN
-            # peptideevidence pe2 ON mp2.id = pe2.peptide_id AND mp2.upload_id = pe2.upload_id INNER JOIN
-            # dbsequence dbs2 ON pe2.dbsequence_id = dbs2.id AND pe2.upload_id = dbs2.upload_id INNER JOIN
-            # upload u on u.id = si.upload_id
-            # WHERE mp1.link_site1 > 0 AND mp2.link_site1 > 0 AND pe1.is_decoy = false AND pe2.is_decoy = false
-            # AND si.pass_threshold = true
-            # GROUP BY pe1.dbsequence_id , dbs1.accession, (pe1.pep_start + mp1.link_site1 - 1), pe2.dbsequence_id, dbs2.accession , (pe2.pep_start + mp2.link_site1 - 1)
-            # ORDER BY pe1.dbsequence_id , (pe1.pep_start + mp1.link_site1 - 1), pe2.dbsequence_id, (pe2.pep_start + mp2.link_site1 - 1)
-            # ;""")
-            # rs = conn.execute(sql)
-            # rp_rows = rs.fetchall()
-            # logging.info("Successfully fetched residue pairs")
-
-        except Exception as error:
-            raise error
-        finally:
-            conn.close()
-
-    rp_rows = {}
-    try:
-        conn = sqlite3.connect(temp_database)
-        cur = conn.cursor()
-        sql = """SELECT group_concat(si.id) as match_ids, group_concat(u.identification_file_name) as files,
+            sql = text("""SELECT group_concat(si.id) as match_ids, group_concat(u.identification_file_name) as files,
             pe1.dbsequence_id as prot1, dbs1.accession as prot1_acc, (pe1.pep_start + mp1.link_site1 - 1) as pos1,
             pe2.dbsequence_id as prot2, dbs2.accession as prot2_acc, (pe2.pep_start + mp2.link_site1 - 1) as pos2
             FROM match si INNER JOIN
@@ -217,19 +194,19 @@ def json_sequences_and_residue_pairs(filepath, tmpdir):
             WHERE mp1.link_site1 > 0 AND mp2.link_site1 > 0 AND pe1.is_decoy = false AND pe2.is_decoy = false
             AND si.pass_threshold = true
             GROUP BY pe1.dbsequence_id , dbs1.accession, (pe1.pep_start + mp1.link_site1 - 1), pe2.dbsequence_id, dbs2.accession , (pe2.pep_start + mp2.link_site1 - 1)
-            ;"""
-        #     ORDER BY pe1.dbsequence_id , (pe1.pep_start + mp1.link_site1 - 1), pe2.dbsequence_id, (pe2.pep_start + mp2.link_site1 - 1)
-        #
-        # time sql execution
-        start_time = time.time()
-        cur.execute(sql)
-        elapsed_time = time.time() - start_time
-        logging.info(f"residue pair SQL execution time: {elapsed_time}")
-        rp_rows = cur.fetchall()
-    except (Exception, sqlite3.DatabaseError) as error:
-        raise error
-    finally:
-        conn.close()
+            ;""")
+            # ORDER BY pe1.dbsequence_id , (pe1.pep_start + mp1.link_site1 - 1), pe2.dbsequence_id, (pe2.pep_start + mp2.link_site1 - 1)
+            start_time = time.time()
+            rs = conn.execute(sql)
+            elapsed_time = time.time() - start_time
+            logging.info(f"residue pair SQL execution time: {elapsed_time}")
+            rp_rows = rs.mappings().all()
+            rp_rows = [dict(row) for row in rp_rows]
+            # rp_rows = rs.fetchall()
+        except Exception as error:
+            raise error
+        finally:
+            conn.close()
 
     return{"sequences": seq_rows, "residue_pairs": rp_rows}
 
@@ -237,7 +214,10 @@ def json_sequences_and_residue_pairs(filepath, tmpdir):
 def main():
     """Main function to execute script logic."""
     args = parse_arguments()
-    temp_dir = os.path.expanduser(args.temp) if args.temp else os.path.expanduser('~/mzId_convertor_temp')
+    temp_dir = os.path.expanduser(args.temp) if args.temp else os.path.expanduser('~/mzid_converter_temp')
+    if not os.path.exists(temp_dir):
+        os.makedirs(temp_dir)
+
     if args.writer and args.writer.lower() not in {'api', 'db'}:
         raise ValueError('Writer method not supported! Please use "api" or "db".')
     writer_type = args.writer if args.writer else 'db'

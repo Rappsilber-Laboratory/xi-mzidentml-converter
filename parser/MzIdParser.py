@@ -873,6 +873,7 @@ class MzIdParser:
             upload_data = {
                 'identification_file_name': filename,
                 'project_id': self.writer.pxid,
+                'user_id': self.writer.user_id,
                 'identification_file_name_clean': re.sub(r'[^0-9a-zA-Z-]+', '-', filename)
             }
             table = 'upload'

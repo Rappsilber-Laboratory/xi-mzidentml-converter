@@ -9,6 +9,7 @@ class Upload(Base):
     __tablename__ = "upload"
     id: Mapped[int] = mapped_column(Integer, primary_key=True,  autoincrement=True, nullable=False)
     project_id: Mapped[str] = mapped_column(Text, nullable=True)
+    user_id: Mapped[str] = mapped_column(Text, nullable=True)
     identification_file_name: Mapped[str] = mapped_column(Text, nullable=False)
     analysis_software_list: Mapped[Optional[dict[str, Any]]] = mapped_column(JSON, nullable=True)
     provider: Mapped[Optional[dict[str, Any]]] = mapped_column(JSON, nullable=True)

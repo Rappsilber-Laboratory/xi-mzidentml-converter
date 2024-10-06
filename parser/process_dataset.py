@@ -71,6 +71,7 @@ def parse_arguments():
                         help='No peak list files available, only works in combination with --dir arg',
                         action='store_true')
     parser.add_argument('-w', '--writer', help='Save data to database(-w db) or API(-w api)')
+    parser.add_argument('-u', '--userid', help='User ID to use associate with uplpaded datasets')
 
     return parser.parse_args()
 
@@ -88,11 +89,11 @@ def process_ftp(ftp_url, temp_dir, project_identifier, writer_method, dontdelete
     convert_from_ftp(ftp_url, temp_dir, project_identifier, writer_method, dontdelete)
 
 
-def process_dir(local_dir, project_identifier, writer_method, nopeaklist):
+def process_dir(local_dir, project_identifier, writer_method, nopeaklist, user_id):
     """Processes data from a local directory."""
     if not project_identifier:
         project_identifier = local_dir.rsplit("/", 1)[-1]
-    convert_dir(local_dir, project_identifier, writer_method, nopeaklist=nopeaklist)
+    convert_dir(local_dir, project_identifier, writer_method, nopeaklist=nopeaklist, user_id=user_id)
 
 
 def validate(validate_arg, tmpdir):
@@ -228,7 +229,7 @@ def main():
         elif args.ftp:
             process_ftp(args.ftp, temp_dir, args.identifier, writer_type, args.dontdelete)
         elif args.dir:
-            process_dir(args.dir, args.identifier, writer_type, args.nopeaklist)
+            process_dir(args.dir, args.identifier, writer_type, args.nopeaklist, args.userid)
         elif args.validate:
             validate(args.validate, temp_dir)
         elif args.seqsandresiduepairs:
@@ -365,7 +366,7 @@ def get_ftp_file_list(ftp_ip, ftp_dir):
         ftp.close()
 
 
-def convert_dir(local_dir, project_identifier, writer_method, nopeaklist=False):
+def convert_dir(local_dir, project_identifier, writer_method, nopeaklist=False, user_id=None):
     """Converts files in a local directory."""
     peaklist_dir = None if nopeaklist else local_dir
     for file in os.listdir(local_dir):
@@ -375,7 +376,7 @@ def convert_dir(local_dir, project_identifier, writer_method, nopeaklist=False):
             if writer_method.lower() == 'api':
                 writer = APIWriter(pxid=project_identifier)
             else:
-                writer = DatabaseWriter(conn_str, pxid=project_identifier)
+                writer = DatabaseWriter(conn_str, pxid=project_identifier, user_id=user_id)
             id_parser = MzIdParser(os.path.join(local_dir, file), local_dir, peaklist_dir, writer, logger)
             try:
                 id_parser.parse()

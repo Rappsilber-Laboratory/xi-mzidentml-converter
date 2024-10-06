@@ -9,7 +9,7 @@ from sqlalchemy_utils import database_exists
 class DatabaseWriter(Writer):
     """Class for writing results to a relational database."""
 
-    def __init__(self, connection_str, upload_id=None, pxid=None):
+    def __init__(self, connection_str, upload_id=None, pxid=None, user_id=None):
         """
         Initialises the database connection and the writer in general.
 
@@ -23,6 +23,7 @@ class DatabaseWriter(Writer):
         self.meta = MetaData()
         self.pxid = pxid
         self.upload_id = upload_id
+        self.user_id = user_id
         # Create table schema if necessary (SQLite) - not working for postgresql - why?
         if not database_exists(self.engine.url):
             create_schema(self.engine.url)

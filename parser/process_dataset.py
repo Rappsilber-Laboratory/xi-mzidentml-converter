@@ -4,7 +4,6 @@ import ftplib
 import gc
 import logging.config
 import os
-import sqlite3
 import traceback
 
 import shutil
@@ -97,7 +96,22 @@ def process_dir(local_dir, project_identifier, writer_method, nopeaklist, user_i
 
 
 def validate(validate_arg, tmpdir):
-    """Validates mzIdentML files against the XSD schema, then checks for other errors."""
+    """Validates mzIdentML files against the XSD schema, then checks for other errors.
+    This includes checking that Seq elements are present for target proteins,
+    even though omitting them is technically valid.
+    Prints out results.
+    Parameters
+    ----------
+    validate_arg : str
+        The path to the mzIdentML file or directory to be validated.
+        tmpdir : str
+        The temporary directory to use for validation - an Sqlite DB is created here if given,
+        otherwise an in-memory sqlite DB is used.
+
+    Returns
+    -------
+    None
+    """
     if os.path.isdir(validate_arg):
         print(f'Validating directory: {validate_arg}')
         for file in os.listdir(validate_arg):
@@ -119,7 +133,17 @@ def validate(validate_arg, tmpdir):
 
 
 def json_sequences_and_residue_pairs(filepath, tmpdir):
+    """Returns json of sequences and residue pairs from mzIdentML files.
+    Parameters
+    ----------
+    filepath : str
+        The path to the mzIdentML file to be validated.
+    tmpdir : str
+        The temporary directory to use for validation - an Sqlite DB is created here if given,
+        otherwise an in-memory sqlite DB is used.
+    """
     return orjson.dumps(sequences_and_residue_pairs(filepath, tmpdir))
+
 
 def sequences_and_residue_pairs(filepath, tmpdir):
     """Prints json of sequences and residue pairs from mzIdentML files
@@ -137,14 +161,13 @@ def sequences_and_residue_pairs(filepath, tmpdir):
 
     # tempdir is currently always set
     if tmpdir:
-
         # delete the temp database if it exists
         if os.path.exists(temp_database):
             os.remove(temp_database)
 
         conn_str = f'sqlite:///{temp_database}'
-    # else: # wont currently work
-    #     conn_str = 'sqlite:///:memory:?cache=shared'
+    else: # not working
+        conn_str = 'sqlite:///:memory:?cache=shared'
 
     engine = create_engine(conn_str)
 
@@ -185,18 +208,18 @@ def sequences_and_residue_pairs(filepath, tmpdir):
             pe1.dbsequence_id as prot1, dbs1.accession as prot1_acc, (pe1.pep_start + mp1.link_site1 - 1) as pos1,
             pe2.dbsequence_id as prot2, dbs2.accession as prot2_acc, (pe2.pep_start + mp2.link_site1 - 1) as pos2
             FROM match si INNER JOIN
-            modifiedpeptide mp1 ON si.pep1_id = mp1.id AND si.upload_id = mp1.upload_id INNER JOIN
-            peptideevidence pe1 ON mp1.id = pe1.peptide_id AND mp1.upload_id = pe1.upload_id INNER JOIN
-            dbsequence dbs1 ON pe1.dbsequence_id = dbs1.id AND pe1.upload_id = dbs1.upload_id INNER JOIN
-            modifiedpeptide mp2 ON si.pep2_id = mp2.id AND si.upload_id = mp2.upload_id INNER JOIN
-            peptideevidence pe2 ON mp2.id = pe2.peptide_id AND mp2.upload_id = pe2.upload_id INNER JOIN
-            dbsequence dbs2 ON pe2.dbsequence_id = dbs2.id AND pe2.upload_id = dbs2.upload_id INNER JOIN
+            modifiedpeptide mp1 ON si.upload_id = mp1.upload_id AND si.pep1_id = mp1.id INNER JOIN
+            peptideevidence pe1 ON mp1.upload_id = pe1.upload_id AND  mp1.id = pe1.peptide_id INNER JOIN
+            dbsequence dbs1 ON pe1.upload_id = dbs1.upload_id AND pe1.dbsequence_id = dbs1.id INNER JOIN
+            modifiedpeptide mp2 ON si.upload_id = mp2.upload_id AND si.pep2_id = mp2.id INNER JOIN
+            peptideevidence pe2 ON mp2.upload_id = pe2.upload_id AND mp2.id = pe2.peptide_id INNER JOIN
+            dbsequence dbs2 ON pe2.upload_id = dbs2.upload_id AND pe2.dbsequence_id = dbs2.id INNER JOIN
             upload u on u.id = si.upload_id
             WHERE mp1.link_site1 > 0 AND mp2.link_site1 > 0 AND pe1.is_decoy = false AND pe2.is_decoy = false
             AND si.pass_threshold = true
-            GROUP BY pe1.dbsequence_id , dbs1.accession, (pe1.pep_start + mp1.link_site1 - 1), pe2.dbsequence_id, dbs2.accession , (pe2.pep_start + mp2.link_site1 - 1)
+            GROUP BY pe1.dbsequence_id , dbs1.accession, pos1, pe2.dbsequence_id, dbs2.accession , pos2
+            ORDER BY pe1.dbsequence_id , pos1, pe2.dbsequence_id, pos2
             ;""")
-            # ORDER BY pe1.dbsequence_id , (pe1.pep_start + mp1.link_site1 - 1), pe2.dbsequence_id, (pe2.pep_start + mp2.link_site1 - 1)
             start_time = time.time()
             rs = conn.execute(sql)
             elapsed_time = time.time() - start_time
@@ -209,7 +232,7 @@ def sequences_and_residue_pairs(filepath, tmpdir):
         finally:
             conn.close()
 
-    return{"sequences": seq_rows, "residue_pairs": rp_rows}
+    return {"sequences": seq_rows, "residue_pairs": rp_rows}
 
 
 def main():
@@ -469,10 +492,6 @@ def read_sequences_and_residue_pairs(filepath, upload_id, conn_str):
     except Exception as e:
         print(f"Error parsing {filepath}")
         raise e
-
-
-
-
 
 
 if __name__ == "__main__":

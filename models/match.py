@@ -41,5 +41,9 @@ class Match(Base):
         # ["spectrum.id", "spectrum.spectra_data_id", "spectrum.upload_id"],
         # ),
         Index("ix_match_id", "id"),
+        # CREATE INDEX idx_match_pep1_id ON match (upload_id, pep1_id);
+        # CREATE INDEX idx_match_pep2_id ON match (upload_id, pep2_id);
+        Index("idx_match_pep1_id", "upload_id", "pep1_id"),
+        Index("idx_match_pep2_id", "upload_id", "pep2_id"),
     )
 

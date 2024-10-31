@@ -1254,11 +1254,11 @@ def test_sqlite_mgf_xispec_mzid_parser(tmpdir):
     id_parser = parse_mzid_into_sqlite_xispec(mzid, peak_list_folder, tmpdir, logger, engine)
 
     with engine.connect() as conn:
-        # DBSequence - not written for xiSPEC
+        # DBSequence
         stmt = Table("DBSequence", id_parser.writer.meta, autoload_with=id_parser.writer.engine,
                      quote=False).select()
         rs = conn.execute(stmt)
-        assert len(rs.fetchall()) == 0
+        assert len(rs.fetchall()) == 12
 
         # Modification - parsed from <SearchModification>s
         stmt = Table("SearchModification", id_parser.writer.meta, autoload_with=id_parser.writer.engine,
@@ -1327,11 +1327,11 @@ def test_sqlite_mzml_xispec_mzid_parser(tmpdir):
     id_parser = parse_mzid_into_sqlite_xispec(mzid, peak_list_folder, tmpdir, logger, engine)
 
     with engine.connect() as conn:
-        # DBSequence - not written for xiSPEC
+        # DBSequence
         stmt = Table("DBSequence", id_parser.writer.meta, autoload_with=id_parser.writer.engine,
                      quote=False).select()
         rs = conn.execute(stmt)
-        assert len(rs.fetchall()) == 0
+        assert len(rs.fetchall()) == 12
 
         # Modification - parsed from <SearchModification>s
         stmt = Table("SearchModification", id_parser.writer.meta, autoload_with=id_parser.writer.engine,

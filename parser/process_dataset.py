@@ -4,13 +4,15 @@ import ftplib
 import gc
 import logging.config
 import os
-import orjson
+import traceback
+
 import shutil
 import socket
 import sys
 import time
 from urllib.parse import urlparse
 
+import orjson
 import requests
 from sqlalchemy import create_engine, text
 
@@ -41,13 +43,19 @@ def parse_arguments():
     group.add_argument('-v', '--validate',
                        help='Validate mzIdentML file or files in specified folder against 1.2.0 or 1.3.0 XSD schema, '
                             'and check for other errors, including in referencing of peaklists. '
+                            'AND check that Seq elements are present for target proteins '
+                            '(this not being a requirement of the schema for validity). '
                             'If argument is directory all MzIdentmL files in it will be checked, '
-                            'but it exits after first fail.'
+                            'but it exits after first failure.'
                             'If its a specific file then this file will be checked.'
                             'The referenced peaklist files must be present alongside the MzIdentML files,'
-                            'contained in the same directory as them.')
+                            'i.e. contained in the same directory as them.')
     group.add_argument('--seqsandresiduepairs',
-                       help='output JSON with sequences and residue pairs')
+                       help='Output JSON with sequences and residue pairs,'
+                            'if argument is directory all MzIdentmL files in it will be read. '
+                            'If --temp option is given then the temp folder will be used for the sqlite DB file, '
+                            'otherwise an in-memory sqlite DB will be used. '
+                       )
 
     parser.add_argument('-i', '--identifier',
                         help='Identifier to use for dataset (if providing '
@@ -56,24 +64,14 @@ def parse_arguments():
     parser.add_argument('--dontdelete', action='store_true',
                         help="Don't delete downloaded data after processing")
     parser.add_argument('-t', '--temp', action='store_true',
-                        help='Temp folder to download data files into (default: ~/mzId_convertor_temp)')
+                        help='Temp folder to download data files into or to create temp sqlite DB in.'
+                             '(default: ~/mzid_converter_temp)')
     parser.add_argument('-n', '--nopeaklist',
                         help='No peak list files available, only works in combination with --dir arg',
                         action='store_true')
     parser.add_argument('-w', '--writer', help='Save data to database(-w db) or API(-w api)')
 
     return parser.parse_args()
-
-
-def get_temp_dir(temp_arg):
-    """Returns the temporary directory for downloads."""
-    return os.path.expanduser(temp_arg) if temp_arg else os.path.expanduser('~/mzId_convertor_temp')
-
-
-def validate_writer_method(writer_method):
-    """Validates the writer method input."""
-    if writer_method and writer_method.lower() not in {'api', 'db'}:
-        raise ValueError('Writer method not supported! Please use "api" or "db".')
 
 
 def process_pxid(px_accessions, temp_dir, writer_method, dontdelete):
@@ -97,7 +95,22 @@ def process_dir(local_dir, project_identifier, writer_method, nopeaklist):
 
 
 def validate(validate_arg, tmpdir):
-    """Validates mzIdentML files against the XSD schema, then checks for other errors."""
+    """Validates mzIdentML files against the XSD schema, then checks for other errors.
+    This includes checking that Seq elements are present for target proteins,
+    even though omitting them is technically valid.
+    Prints out results.
+    Parameters
+    ----------
+    validate_arg : str
+        The path to the mzIdentML file or directory to be validated.
+        tmpdir : str
+        The temporary directory to use for validation - an Sqlite DB is created here if given,
+        otherwise an in-memory sqlite DB is used.
+
+    Returns
+    -------
+    None
+    """
     if os.path.isdir(validate_arg):
         print(f'Validating directory: {validate_arg}')
         for file in os.listdir(validate_arg):
@@ -119,38 +132,134 @@ def validate(validate_arg, tmpdir):
 
 
 def json_sequences_and_residue_pairs(filepath, tmpdir):
+    """Returns json of sequences and residue pairs from mzIdentML files.
+    Parameters
+    ----------
+    filepath : str
+        The path to the mzIdentML file to be validated.
+    tmpdir : str
+        The temporary directory to use for validation - an Sqlite DB is created here if given,
+        otherwise an in-memory sqlite DB is used.
+    """
+    return orjson.dumps(sequences_and_residue_pairs(filepath, tmpdir))
+
+
+def sequences_and_residue_pairs(filepath, tmpdir):
     """Prints json of sequences and residue pairs from mzIdentML files
     Parameters
     ----------
     filepath : str
         The path to the mzIdentML file to be validated.
     tmpdir : str
-        The temporary directory to use for validation - an Sqlite DB is created here.
+        The temporary directory to use for validation - an Sqlite DB is created here if given,
+        otherwise an in-memory sqlite DB is used.
     """
+    file = os.path.basename(filepath)
+    filewithoutext = os.path.splitext(file)[0]
+    temp_database = os.path.join(str(tmpdir), f'{filewithoutext}.db')
 
-    print(orjson.dumps(sequences_and_residue_pairs(filepath, tmpdir)))
+    # tempdir is currently always set
+    if tmpdir:
+        # delete the temp database if it exists
+        if os.path.exists(temp_database):
+            os.remove(temp_database)
+
+        conn_str = f'sqlite:///{temp_database}'
+    else: # not working
+        conn_str = 'sqlite:///:memory:?cache=shared'
+
+    engine = create_engine(conn_str)
+
+    if os.path.isdir(filepath):
+        for file in os.listdir(filepath):
+            mzid_count = 0
+            if file.endswith(".mzid"):
+                mzid_count += 1
+                file_to_process = os.path.join(filepath, file)
+                read_sequences_and_residue_pairs(file_to_process, mzid_count, conn_str)
+    elif os.path.isfile(filepath):
+        if filepath.endswith(".mzid"):
+            read_sequences_and_residue_pairs(filepath, 0, conn_str)
+        else:
+            raise ValueError(f'Invalid file path (must end ".mzid"): {filepath}')
+    else:
+        raise ValueError(f'Invalid file or directory path: {filepath}')
+
+    with engine.connect() as conn:
+        try:
+            # get sequences
+            sql = text("""
+            SELECT dbseq.id, u.identification_file_name as file, dbseq.sequence, dbseq.accession
+            FROM upload AS u
+            JOIN dbsequence AS dbseq ON u.id = dbseq.upload_id
+            INNER JOIN peptideevidence pe ON dbseq.id = pe.dbsequence_id AND dbseq.upload_id = pe.upload_id
+            WHERE pe.is_decoy = false
+            GROUP BY dbseq.id, dbseq.sequence, dbseq.accession, u.identification_file_name;
+            """)
+            rs = conn.execute(sql)
+            seq_rows = rs.mappings().all()
+            seq_rows = [dict(row) for row in seq_rows]
+            # seq_rows = rs.fetchall()
+            logging.info("Successfully fetched sequences")
+
+            # get residue pairs
+            sql = text("""SELECT group_concat(si.id) as match_ids, group_concat(u.identification_file_name) as files,
+            pe1.dbsequence_id as prot1, dbs1.accession as prot1_acc, (pe1.pep_start + mp1.link_site1 - 1) as pos1,
+            pe2.dbsequence_id as prot2, dbs2.accession as prot2_acc, (pe2.pep_start + mp2.link_site1 - 1) as pos2
+            FROM match si INNER JOIN
+            modifiedpeptide mp1 ON si.upload_id = mp1.upload_id AND si.pep1_id = mp1.id INNER JOIN
+            peptideevidence pe1 ON mp1.upload_id = pe1.upload_id AND  mp1.id = pe1.peptide_id INNER JOIN
+            dbsequence dbs1 ON pe1.upload_id = dbs1.upload_id AND pe1.dbsequence_id = dbs1.id INNER JOIN
+            modifiedpeptide mp2 ON si.upload_id = mp2.upload_id AND si.pep2_id = mp2.id INNER JOIN
+            peptideevidence pe2 ON mp2.upload_id = pe2.upload_id AND mp2.id = pe2.peptide_id INNER JOIN
+            dbsequence dbs2 ON pe2.upload_id = dbs2.upload_id AND pe2.dbsequence_id = dbs2.id INNER JOIN
+            upload u on u.id = si.upload_id
+            WHERE mp1.link_site1 > 0 AND mp2.link_site1 > 0 AND pe1.is_decoy = false AND pe2.is_decoy = false
+            AND si.pass_threshold = true
+            GROUP BY pe1.dbsequence_id , dbs1.accession, pos1, pe2.dbsequence_id, dbs2.accession , pos2
+            ORDER BY pe1.dbsequence_id , pos1, pe2.dbsequence_id, pos2
+            ;""")
+            start_time = time.time()
+            rs = conn.execute(sql)
+            elapsed_time = time.time() - start_time
+            logging.info(f"residue pair SQL execution time: {elapsed_time}")
+            rp_rows = rs.mappings().all()
+            rp_rows = [dict(row) for row in rp_rows]
+            # rp_rows = rs.fetchall()
+        except Exception as error:
+            raise error
+        finally:
+            conn.close()
+
+    return {"sequences": seq_rows, "residue_pairs": rp_rows}
 
 
 def main():
     """Main function to execute script logic."""
     args = parse_arguments()
-    temp_dir = get_temp_dir(args.temp)
-    validate_writer_method(args.writer)
+    temp_dir = os.path.expanduser(args.temp) if args.temp else os.path.expanduser('~/mzid_converter_temp')
+    if not os.path.exists(temp_dir):
+        os.makedirs(temp_dir)
+
+    if args.writer and args.writer.lower() not in {'api', 'db'}:
+        raise ValueError('Writer method not supported! Please use "api" or "db".')
+    writer_type = args.writer if args.writer else 'db'
 
     try:
         if args.pxid:
-            process_pxid(args.pxid, temp_dir, args.writer, args.dontdelete)
+            process_pxid(args.pxid, temp_dir, writer_type, args.dontdelete)
         elif args.ftp:
-            process_ftp(args.ftp, temp_dir, args.identifier, args.writer, args.dontdelete)
+            process_ftp(args.ftp, temp_dir, args.identifier, writer_type, args.dontdelete)
         elif args.dir:
-            process_dir(args.dir, args.identifier, args.writer, args.nopeaklist)
+            process_dir(args.dir, args.identifier, writer_type, args.nopeaklist)
         elif args.validate:
             validate(args.validate, temp_dir)
         elif args.seqsandresiduepairs:
-            json_sequences_and_residue_pairs(args.seqsandresiduepairs, temp_dir)
+            print(json_sequences_and_residue_pairs(args.seqsandresiduepairs, temp_dir))
         sys.exit(0)
     except Exception as ex:
         logger.error(ex)
+        traceback.print_exc()
         sys.exit(1)
 
 
@@ -322,6 +431,9 @@ def validate_file(filepath, tmpdir):
     local_dir = os.path.dirname(filepath)
     file = os.path.basename(filepath)
 
+    if not file.endswith(".mzid"):
+        raise ValueError(f'Invalid file path (must end ".mzid"): {filepath}')
+
     if schema_validate(filepath):
         print(f'File {filepath} is schema valid.')
 
@@ -332,6 +444,10 @@ def validate_file(filepath, tmpdir):
             os.remove(test_database)
         conn_str = f'sqlite:///{test_database}'
         engine = create_engine(conn_str)
+
+        # switch on Foreign Key Enforcement
+        with engine.connect() as conn:
+            conn.execute(text("PRAGMA foreign_keys = ON;"))
 
         writer = DatabaseWriter(conn_str, upload_id=1, pxid="Validation")
         id_parser = SqliteMzIdParser(os.path.join(local_dir, file), local_dir, local_dir, writer, logger)
@@ -349,7 +465,7 @@ def validate_file(filepath, tmpdir):
     return True
 
 
-def sequences_and_residue_pairs(filepath, tmpdir):
+def read_sequences_and_residue_pairs(filepath, upload_id, conn_str):
     """
     get sequences and residue pairs from mzIdentML files
 
@@ -357,62 +473,24 @@ def sequences_and_residue_pairs(filepath, tmpdir):
     ----------
     filepath : str
         The path to the mzIdentML file to be validated.
-    tmpdir : str
-        The temporary directory to use for validation - an Sqlite DB is created here.
+    upload_id : int
+        The upload id to use for the sequences and residue pairs.
+    conn_str : str
+        The connection string to use for the sqlite database.
 
     Returns
     -------
-    objects
-          """
-
-    # if os.path.isdir(filepath):
-    #     for file in os.listdir(filepath):
-    #         if file.endswith(".mzid"):
-    #             file_to_process = os.path.join(filepath, file)
-    #             sequences_and_residue_pairs(file_to_process, tmpdir)
-
+    None
+    """
 
     local_dir = os.path.dirname(filepath)
-    file = os.path.basename(filepath)
-
-    filewithoutext = os.path.splitext(file)[0]
-    test_database = os.path.join(str(tmpdir), f'{filewithoutext}.db')
-    # delete the test database if it exists
-    if os.path.exists(test_database):
-        os.remove(test_database)
-    conn_str = f'sqlite:///{test_database}'
-    engine = create_engine(conn_str)
-
-    writer = DatabaseWriter(conn_str, upload_id=1, pxid="Validation")
-    id_parser = SqliteMzIdParser(os.path.join(local_dir, file), local_dir, local_dir, writer, logger)
+    writer = DatabaseWriter(conn_str, upload_id, pxid="Validation")
+    id_parser = SqliteMzIdParser(filepath, local_dir, local_dir, writer, logger)
     try:
         id_parser.parse()
     except Exception as e:
         print(f"Error parsing {filepath}")
-        print(e)
-
-    with engine.connect() as conn:
-        try:
-            sql = text("""
-            SELECT dbseq.id, u.identification_file_name as file, dbseq.sequence, dbseq.accession
-            FROM upload AS u
-            JOIN dbsequence AS dbseq ON u.id = dbseq.upload_id
-            INNER JOIN peptideevidence pe ON dbseq.id = pe.dbsequence_id AND dbseq.upload_id = pe.upload_id
-            WHERE u.id = 1
-            AND pe.is_decoy = false
-            GROUP BY dbseq.id, dbseq.sequence, dbseq.accession, u.identification_file_name;
-            """)
-            rs = conn.execute(sql)
-            mzid_rows = rs.fetchall()
-
-            logging.info("Successfully fetched sequences")
-        except Exception as error:
-            logging.error(error)
-        finally:
-            logging.info('Database connection closed.')
-
-    return mzid_rows
-
+        raise e
 
 
 if __name__ == "__main__":

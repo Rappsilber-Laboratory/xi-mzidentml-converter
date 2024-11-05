@@ -24,7 +24,7 @@ def get_version(rel_path):
 
 setup(
     name="xi-mzidentml-converter",
-    version="0.2.7",
+    version="0.3.0",
     description="xi-mzidentml-converter uses pyteomics (https://pyteomics.readthedocs.io/en/latest/index.html) to "
                 "parse mzIdentML files (v1.2.0) and extract crosslink information. Results are written to a "
                 "relational database (PostgreSQL or SQLite) using sqlalchemy.",
@@ -51,7 +51,8 @@ setup(
         'python-multipart',
         'python-jose',
         'passlib',
-        'jose'
+        'jose',
+        'orjson'
     ],
     entry_points={"console_scripts": ["process_dataset = parser.process_dataset:main"]},
     platforms=["any"],

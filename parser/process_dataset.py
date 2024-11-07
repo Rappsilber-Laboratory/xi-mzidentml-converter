@@ -24,12 +24,19 @@ from parser.MzIdParser import MzIdParser, SqliteMzIdParser
 from parser.schema_validate import schema_validate
 
 # Configure logging
-current_working_directory = os.getcwd()
-print("Current working Directory: " + current_working_directory)
-logging_config_file = os.path.join(current_working_directory, 'logging.ini')
-logging.config.fileConfig(logging_config_file)
-logger = logging.getLogger(__name__)
+import logging.config
+import importlib.resources
 
+try:
+    # Access `logging.ini` as a resource inside the package
+    with importlib.resources.path('config', 'logging.ini') as logging_config_path:
+        logging.config.fileConfig(logging_config_path)
+        logger = logging.getLogger(__name__)
+except FileNotFoundError:
+    # Fall back to basic config if `logging.ini` is missing
+    logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    logger = logging.getLogger(__name__)
+    logger.error("Logging configuration file not found.")
 
 def parse_arguments():
     """Parses command-line arguments."""

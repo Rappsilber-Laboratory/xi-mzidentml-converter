@@ -1,3 +1,4 @@
+import importlib
 import os
 
 from lxml import etree
@@ -35,24 +36,32 @@ def schema_validate(xml_file):
         print(f"Sorry, we're only supporting 1.2.0 and 1.3.0 (the ones that contain crosslinks). Rejected schema file: {schema_fname}")
         return False
 
-    current_directory = os.getcwd()
-    # print(f"Current working directory: {current_directory}")
-    # read from scehma directory
-    schema_file = os.path.join(current_directory, '..', 'schema', schema_fname)
-    # Parse the XSD file
-    with open(schema_file, 'r') as schema_file:
-        schema_root = etree.XML(schema_file.read())
-    schema = etree.XMLSchema(schema_root)
+    try:
+        # Access `logging.ini` as a resource inside the package
+        with importlib.resources.path('schema', schema_fname) as schema_file:
+            # current_directory = os.getcwd()
+            # # print(f"Current working directory: {current_directory}")
+            # # read from scehma directory
+            # schema_file = os.path.join(current_directory, '..', 'schema', schema_fname)
+            # # Parse the XSD file
+            with open(schema_file, 'r') as schema_file:
+                schema_root = etree.XML(schema_file.read())
+            schema = etree.XMLSchema(schema_root)
 
-    # Validate XML against the schema
-    if schema.validate(xml_doc):
-        # print("XML is valid.")
-        return True
-    else:
-        # Print out any validation errors
-        print("XML is invalid. First 20 errors:")
-        # get first 20 errors from schema.error_log
-        for error in schema.error_log[:20]:
-            print(f"Error: {error.message}, Line: {error.line}")
-        return False
+            # Validate XML against the schema
+            if schema.validate(xml_doc):
+                # print("XML is valid.")
+                return True
+            else:
+                # Print out any validation errors
+                print("XML is invalid. First 20 errors:")
+                # get first 20 errors from schema.error_log
+                for error in schema.error_log[:20]:
+                    print(f"Error: {error.message}, Line: {error.line}")
+                return False
+
+    except FileNotFoundError:
+        print("Schema file not found.")
+
+
 

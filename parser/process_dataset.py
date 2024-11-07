@@ -24,7 +24,9 @@ from parser.MzIdParser import MzIdParser, SqliteMzIdParser
 from parser.schema_validate import schema_validate
 
 # Configure logging
-logging_config_file = os.path.join(os.path.dirname(__file__), '../config/logging.ini')
+current_working_directory = os.getcwd()
+print("Current working Directory: " + current_working_directory)
+logging_config_file = os.path.join(current_working_directory, 'logging.ini')
 logging.config.fileConfig(logging_config_file)
 logger = logging.getLogger(__name__)
 

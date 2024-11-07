@@ -1,7 +1,6 @@
 import os
 
 from lxml import etree
-import requests
 
 def schema_validate(xml_file):
     # Parse the XML file
@@ -39,7 +38,7 @@ def schema_validate(xml_file):
     current_directory = os.getcwd()
     # print(f"Current working directory: {current_directory}")
     # read from scehma directory
-    schema_file = os.path.join(current_directory, '..', 'schema', schema_fname)
+    schema_file = os.path.join(current_directory, 'schema', schema_fname)
     # Parse the XSD file
     with open(schema_file, 'r') as schema_file:
         schema_root = etree.XML(schema_file.read())

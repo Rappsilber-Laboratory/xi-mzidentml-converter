@@ -1,3 +1,4 @@
+"""DatabaseWriter class for writing results to a postgresql relational database."""
 from sqlalchemy import create_engine, MetaData
 from sqlalchemy import Table
 
@@ -42,6 +43,12 @@ class DatabaseWriter(Writer):
             conn.close()
 
     def write_new_upload(self, table, data):
+        """
+        Insert data into upload table and return the id of the new row.
+        :param table:
+        :param data:
+        :return:
+        """
         table = Table(table, self.meta, autoload_with=self.engine, quote=False)
         with self.engine.connect() as conn:
             statement = table.insert().values(data).returning(table.columns[0])  # RETURNING id AS upload_id
@@ -54,8 +61,6 @@ class DatabaseWriter(Writer):
                         provider, audits, samples, bib, upload_id):
         """
         Update Upload row with mzid info.
-
-        ToDo: have this explicitly or create update func?
         :param analysis_software_list: (list) List of analysis software used.
         :param spectra_formats:
         :param provider:
@@ -66,6 +71,7 @@ class DatabaseWriter(Writer):
         :return:
         """
         upload = Table("upload", self.meta, autoload_with=self.engine, quote=False)
+        # noinspection PyTypeChecker
         stmt = upload.update().where(upload.c.id == str(upload_id)).values(
             analysis_software_list=analysis_software_list,
             spectra_formats=spectra_formats,
@@ -90,6 +96,7 @@ class DatabaseWriter(Writer):
         """
         upload = Table("upload", self.meta, autoload_with=self.engine, quote=False)
         with self.engine.connect() as conn:
+            # noinspection PyTypeChecker
             stmt = upload.update().where(upload.c.id == str(upload_id)).values(
                 contains_crosslinks=contains_crosslinks,
                 upload_warnings=upload_warnings,

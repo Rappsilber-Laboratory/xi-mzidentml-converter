@@ -1,8 +1,17 @@
+"""
+config_parser.py
+"""
 from configparser import ConfigParser
 import os
 
 
 def parse_config(filename, section='postgresql'):
+    """
+    Parse database.ini file
+    :param filename:
+    :param section:
+    :return:
+    """
     # create a parser
     parser = ConfigParser()
     # read config file

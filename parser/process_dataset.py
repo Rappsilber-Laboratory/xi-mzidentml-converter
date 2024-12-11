@@ -108,17 +108,11 @@ def validate(validate_arg, tmpdir):
     This includes checking that Seq elements are present for target proteins,
     even though omitting them is technically valid.
     Prints out results.
-    Parameters
-    ----------
-    validate_arg : str
+    :param validate_arg: str
         The path to the mzIdentML file or directory to be validated.
-        tmpdir : str
-        The temporary directory to use for validation - an Sqlite DB is created here if given,
-        otherwise an in-memory sqlite DB is used.
-
-    Returns
-    -------
-    None
+    :param tmpdir: str
+        The temporary directory to use for validation - an Sqlite DB is created here.
+    :return: None
     """
     if os.path.isdir(validate_arg):
         print(f'Validating directory: {validate_arg}')
@@ -348,7 +342,7 @@ def convert_from_ftp(ftp_url, temp_dir, project_identifier, writer_method, dontd
             ftp = get_ftp_login(ftp_ip)
             try:
                 ftp.cwd(urlparse(ftp_url).path)
-                ftp.retrbinary(f"RETR {f}", open(os.path.join(path, f), 'wb').write)
+                ftp.retrbinary(f"RETR {f}", open(os.path.join(str(path), f), 'wb').write)
                 ftp.quit()
             except ftplib.error_perm as e:
                 ftp.quit()

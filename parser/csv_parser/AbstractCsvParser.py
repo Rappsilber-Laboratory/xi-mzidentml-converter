@@ -1,3 +1,4 @@
+"""Abstract class for csv parsers."""
 import abc
 import os
 from time import time
@@ -18,22 +19,34 @@ class CsvParseException(Exception):
 
 
 class MissingFileException(Exception):
+    """
+    Exception raised for missing files.
+    todo - reuse other exception?
+    """
     pass
 
 
 class AbstractCsvParser(abc.ABC):
     """
-
+    Abstract class for csv parsers.
     """
 
     @property
     @abc.abstractmethod
     def required_cols(self):
+        """
+        Get required column names in csv file.
+        :return: list of strings
+        """
         pass
 
     @property
     @abc.abstractmethod
     def optional_cols(self):
+        """
+        Get optional column names in csv file.
+        :return: list of strings
+        """
         pass
 
     default_values = {
@@ -129,12 +142,22 @@ class AbstractCsvParser(abc.ABC):
         # self.csv_reader.fillna('Null', inplace=True)
 
     def check_required_columns(self):
+        """
+        Check if all required columns are present in the csv file.
+        todo - return type / raising exception is not consistent
+        :return: bool
+        :raises CsvParseException: if a required column is missing
+        """
         for required_col in self.required_cols:
             if required_col not in self.csv_reader.columns:
                 raise CsvParseException("Required csv column %s missing" % required_col)
         return True
 
     def get_missing_required_columns(self):
+        """
+        Get missing required columns in the csv file.
+        :return: list of strings
+        """
         missing_cols = []
         for required_col in self.required_cols:
             if required_col not in self.csv_reader.columns:
@@ -149,6 +172,9 @@ class AbstractCsvParser(abc.ABC):
         return self.csv_reader.peaklistfilename.unique()
 
     def get_sequence_db_file_names(self):
+        """
+        :return: list of all used sequence db file names
+        """
         fasta_files = []
         for file in os.listdir(self.temp_dir):
             if file.endswith(".fasta") or file.endswith(".FASTA"):
@@ -202,7 +228,9 @@ class AbstractCsvParser(abc.ABC):
         self.peak_list_readers = peak_list_readers
 
     def parse(self):
-
+        """
+        Parse csv file.
+        """
         start_time = time()
 
         # ToDo: more gracefully handle missing files
@@ -224,6 +252,9 @@ class AbstractCsvParser(abc.ABC):
 
     @abc.abstractmethod
     def main_loop(self):
+        """
+        Main loop for parsing the csv.
+        """
         pass
 
     # @staticmethod
@@ -243,12 +274,18 @@ class AbstractCsvParser(abc.ABC):
     #     return masses
 
     def parse_db_sequences(self):
+        """
+        Parse db sequences.
+        """
         self.logger.info('reading fasta - start')
         self.start_time = time()
         self.fasta = SimpleFASTA.get_db_sequence_dict(self.get_sequence_db_file_names())
         self.logger.info('reading fasta - done. Time: ' + str(round(time() - self.start_time, 2)) + " sec")
 
     def upload_info(self):
+        """
+        Write new upload to database.
+        """
         self.logger.info('new csv upload')
         # # ident_file_size = os.path.getsize(self.csv_path)
         # # peak_list_file_names = json.dumps(self.get_peak_list_file_names(), cls=NumpyEncoder)
@@ -260,7 +297,9 @@ class AbstractCsvParser(abc.ABC):
         # self.writer.write_mzid_info(spectra_formats, provider, audits, samples, bib_refs)
 
     def write_new_upload(self):
-        """Write new upload."""
+        """Write new upload todatabase.
+        :raises Exception: if there is an error writing to the database.
+        """
         upload_data = {
             # 'id': self.writer.upload_id,
             # 'user_id': self.writer.user_id,

@@ -1,8 +1,14 @@
+"""
+index.py
+This file contains helper function to get database session
+"""
 from config.database import SessionLocal
 
 
-# Helper function to get database session
 def get_session():
+    """
+    Helper function to get database session
+    """
     session = SessionLocal()
     try:
         yield session

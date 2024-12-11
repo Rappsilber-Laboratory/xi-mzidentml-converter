@@ -1,3 +1,6 @@
+"""
+PeakListWrapper.py
+"""
 import ntpath
 import zipfile
 import re
@@ -9,20 +12,26 @@ import numpy as np
 import io
 import tarfile
 
-
+#todo -check error handling
 class PeakListParseError(Exception):
+    """raised if error reading peaklist, invalid spectrum id or spectrum not found in peaklist file."""
     pass
 
 
 class SpectrumIdFormatError(Exception):
+    """raised if the spectrum id format is not supported by the reader."""
     pass
 
 
 class ScanNotFoundException(Exception):
+    """raised if the scan is not found in the mzML file."""
     pass
 
 
 class Spectrum:
+    """
+    A class to represent a spectrum.
+    """
     def __init__(self, precursor, mz_array, int_array, rt=np.nan):
         """
         Initialise a Spectrum object.
@@ -45,6 +54,9 @@ class Spectrum:
 
 
 class PeakListWrapper:
+    """
+    A class to wrap peak list files and provide an interface to access the spectra.
+    """
     def __init__(self, pl_path, file_format_accession, spectrum_id_format_accession):
         self.file_format_accession = file_format_accession
         self.spectrum_id_format_accession = spectrum_id_format_accession
@@ -71,16 +83,31 @@ class PeakListWrapper:
         return self.reader[spec_id]
 
     def is_mgf(self):
+        """
+        Check if the peak list is in MGF format.
+        :return: bbol
+        """
         return self.file_format_accession == 'MS:1001062'
 
     def is_mzml(self):
+        """
+        Check if the peak list is in mzML format.
+        :return: bool
+        """
         return self.file_format_accession == 'MS:1000584'
 
     def is_ms2(self):
+        """
+        Check if the peak list is in MS2 format.
+        :return: bool
+        """
         return self.file_format_accession == 'MS:1001466'
 
     @staticmethod
     def extract_gz(in_file):
+        """
+        Extract gzipped file.
+        """
         if in_file.endswith('.gz'):
             in_f = gzip.open(in_file, 'rb')
             in_file = in_file.replace(".gz", "")
@@ -101,7 +128,7 @@ class PeakListWrapper:
 
         :param zip_file: path to archive to unzip
         :param out_path: where to extract the files
-        :return: resulting folder
+        :return: path to resulting folder
         """
         if zip_file.endswith(".zip"):
             zip_ref = zipfile.ZipFile(zip_file, 'r')

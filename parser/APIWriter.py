@@ -1,3 +1,4 @@
+"""APIWriter.py - Class for writing results via an API."""
 import traceback
 import requests
 import json
@@ -117,6 +118,13 @@ class APIWriter(Writer):
             return None
 
     def write_other_info(self, contains_crosslinks, upload_warnings, upload_id):
+        """
+        Update Upload row with remaining info.
+        :param contains_crosslinks:
+        :param upload_warnings:
+        :param upload_id:
+        :return:
+        """
         response = None
         try:
             # todo: use urljoin

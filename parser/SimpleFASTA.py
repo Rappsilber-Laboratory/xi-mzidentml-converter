@@ -1,3 +1,4 @@
+"""SimpleFASTA.py - Parse a FASTA file and return a dictionary of the sequences."""
 import re
 
 
@@ -5,6 +6,11 @@ import re
 
 # noinspection PyUnusedLocal
 def get_db_sequence_dict(fasta_file_list):
+    """
+    Parse a FASTA file and return a dictionary of the sequences.
+    :param fasta_file_list:
+    :return: dict
+    """
     db_sequence_dict = {}
     identifier = None
     sequence = ""
@@ -39,6 +45,14 @@ def get_db_sequence_dict(fasta_file_list):
 
 
 def add_entry(identifier, sequence, description, seq_dict):
+    """
+    Add an entry to the sequence dictionary.
+    :param identifier:
+    :param sequence:
+    :param description:
+    :param seq_dict:
+    :return: None
+    """
     m = re.search(r'..\|(.*)\|(.*)\s?', identifier)
     # id = identifier
     accession = identifier

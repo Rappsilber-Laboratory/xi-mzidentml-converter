@@ -1,3 +1,6 @@
+"""
+converts mzIdentML files to DB entries
+"""
 import base64
 import gzip
 import json
@@ -22,6 +25,7 @@ from parser.peaklistReader.PeakListWrapper import PeakListWrapper
 
 
 class MzIdParseException(Exception):
+    """Exception raised when parsing mzIdentML files."""
     pass
 
 
@@ -102,6 +106,10 @@ class MzIdParser:
 
     @staticmethod
     def check_spectra_data_validity(sp_datum):
+        """
+        Check if the SpectraData element is valid.
+        :param sp_datum:
+        """
         # is there anything we'd like to complain about?
         # SpectrumIDFormat
         if 'SpectrumIDFormat' not in sp_datum or sp_datum['SpectrumIDFormat'] is None:
@@ -664,7 +672,7 @@ class MzIdParser:
         main_loop_start_time = time()
         self.logger.info('main loop - start')
 
-        msi_regex = re.compile(r'^([0-9]+)(?::(P|C))$')
+        msi_regex = re.compile(r'^([0-9]+):([PC])$')
 
         spec_count = 0
         spectra = []
@@ -814,6 +822,7 @@ class MzIdParser:
 
     # noinspection PyBroadException
     def upload_info(self):
+        """write mzid file level info to the DB."""
         upload_info_start_time = time()
         self.logger.info('parse upload info - start')
         self.mzid_reader.reset()
@@ -864,6 +873,9 @@ class MzIdParser:
             round(time() - upload_info_start_time, 2)))
 
     def fill_in_missing_scores(self):
+        """
+        Legacy xiSPEC, ignore
+        """
         pass
 
     def write_new_upload(self):
@@ -941,6 +953,11 @@ class MzIdParser:
     # split into two functions
     @staticmethod
     def extract_mzid(archive):
+        """
+        Extract the files from the archive.
+        :param archive:
+        :return:
+        """
         if archive.endswith('zip'):
             zip_ref = zipfile.ZipFile(archive, 'r')
             unzip_path = archive + '_unzip/'
@@ -1043,7 +1060,7 @@ class SqliteMzIdParser(MzIdParser):
             }
             table = 'upload'
 
-            response = self.writer.write_data(table, upload_data)
+            self.writer.write_data(table, upload_data)
         except SQLAlchemyError as e:
             print(f"Error during database insert: {e}")
 

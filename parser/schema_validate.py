@@ -1,9 +1,14 @@
+"""schema_validate.py - Validate an mzIdentML file against 1.2.0 or 1.3.0 schema."""
 import importlib
-import os
 
 from lxml import etree
 
 def schema_validate(xml_file):
+    """
+    Validate an mzIdentML file against 1.2.0 or 1.3.0 schema.
+    :param xml_file: Path to the mzIdentML file.
+    :return: True if the XML is valid, False otherwise.
+    """
     # Parse the XML file
     with open(xml_file, 'r') as xml:
         xml_doc = etree.parse(xml)
@@ -44,8 +49,8 @@ def schema_validate(xml_file):
             # # read from scehma directory
             # schema_file = os.path.join(current_directory, '..', 'schema', schema_fname)
             # # Parse the XSD file
-            with open(schema_file, 'r') as schema_file:
-                schema_root = etree.XML(schema_file.read())
+            with open(schema_file, 'r') as schema_file_stream:
+                schema_root = etree.XML(schema_file_stream.read())
             schema = etree.XMLSchema(schema_root)
 
             # Validate XML against the schema

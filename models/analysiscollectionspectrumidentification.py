@@ -1,3 +1,7 @@
+"""
+This file contains the AnalysisCollectionSpectrumIdentification class,
+which is a SQLAlchemy model for the analysiscollectionspectrumidentification table in the database.
+"""
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy import ForeignKey, Text, ForeignKeyConstraint, Integer, Any, JSON
 from models.base import Base

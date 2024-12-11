@@ -1,3 +1,7 @@
+"""
+This file contains the ModifiedPeptide class,
+which is a SQLAlchemy model for the modifiedpeptide table in the database.
+"""
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy import ForeignKey, Text, Integer, JSON, FLOAT, Index
 from models.base import Base

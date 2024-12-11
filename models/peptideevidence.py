@@ -1,3 +1,7 @@
+"""
+This file contains the PeptideEvidence class,
+which is a SQLAlchemy model for the peptideevidence table in the database.
+"""
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy import ForeignKey, Text, Integer, BOOLEAN, ForeignKeyConstraint, Index
 from models.base import Base

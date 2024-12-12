@@ -672,7 +672,7 @@ class MzIdParser:
         main_loop_start_time = time()
         self.logger.info('main loop - start')
 
-        msi_regex = re.compile(r'^([0-9]+):([PC])$')
+        msi_regex = re.compile(r'^([0-9]+)(?::(P|C))$')
 
         spec_count = 0
         spectra = []

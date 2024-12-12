@@ -5,6 +5,7 @@ import gc
 import logging.config
 import os
 import traceback
+import tempfile
 
 import shutil
 import socket
@@ -74,7 +75,7 @@ def parse_arguments():
                         help="Don't delete downloaded data after processing")
     parser.add_argument('-t', '--temp', action='store_true',
                         help='Temp folder to download data files into or to create temp sqlite DB in.'
-                             '(default: ~/mzid_converter_temp)')
+                             '(default: system temp directory)')
     parser.add_argument('-n', '--nopeaklist',
                         help='No peak list files available, only works in combination with --dir arg',
                         action='store_true')
@@ -162,14 +163,14 @@ def sequences_and_residue_pairs(filepath, tmpdir):
     temp_database = os.path.join(str(tmpdir), f'{filewithoutext}.db')
 
     # tempdir is currently always set
-    if tmpdir:
-        # delete the temp database if it exists
-        if os.path.exists(temp_database):
-            os.remove(temp_database)
+    # if tmpdir:
+    # delete the temp database if it exists
+    if os.path.exists(temp_database):
+        os.remove(temp_database)
 
-        conn_str = f'sqlite:///{temp_database}'
-    else: # not working
-        conn_str = 'sqlite:///:memory:?cache=shared'
+    conn_str = f'sqlite:///{temp_database}'
+    # else: # not working
+    #     conn_str = 'sqlite:///:memory:?cache=shared'
 
     engine = create_engine(conn_str)
 
@@ -233,14 +234,14 @@ def sequences_and_residue_pairs(filepath, tmpdir):
             raise error
         finally:
             conn.close()
-
+    os.remove(temp_database)
     return {"sequences": seq_rows, "residue_pairs": rp_rows}
 
 
 def main():
     """Main function to execute script logic."""
     args = parse_arguments()
-    temp_dir = os.path.expanduser(args.temp) if args.temp else os.path.expanduser('~/mzid_converter_temp')
+    temp_dir = os.path.expanduser(args.temp) if args.temp else tempfile.gettempdir()
     if not os.path.exists(temp_dir):
         os.makedirs(temp_dir)
 
@@ -456,6 +457,7 @@ def validate_file(filepath, tmpdir):
         id_parser = SqliteMzIdParser(os.path.join(local_dir, file), local_dir, local_dir, writer, logger)
         try:
             id_parser.parse()
+            os.remove(test_database)
         except Exception as e:
             print(f"Error parsing {filepath}")
             print(e)

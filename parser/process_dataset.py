@@ -343,7 +343,8 @@ def convert_from_ftp(ftp_url, temp_dir, project_identifier, writer_method, dontd
             ftp = get_ftp_login(ftp_ip)
             try:
                 ftp.cwd(urlparse(ftp_url).path)
-                ftp.retrbinary(f"RETR {f}", open(os.path.join(str(path), f), 'wb').write)
+                with open(os.path.join(str(path), f), 'wb') as file:
+                    ftp.retrbinary(f"RETR {f}", file.write)
                 ftp.quit()
             except ftplib.error_perm as e:
                 ftp.quit()

@@ -49,8 +49,8 @@ setup(
         'sqlalchemy==2.0.21',
         'sqlalchemy-utils',
         'obonet',
-        'python-multipart',
-        'python-jose',
+        'python-multipart>=0.0.18',
+        'python-jose>=3.3.0',
         'passlib',
         'jose',
         'orjson'

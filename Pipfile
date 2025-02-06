@@ -19,7 +19,7 @@ obonet = "*"
 orjson = "*"
 #Security modules
 certifi = ">=2023.7.22"
-python-multipart = ">=0.0.7"
+python-multipart = ">=0.0.18"
 python-jose = ">=3.3.0"
 passlib = "*"
 jose = "*"

@@ -37,7 +37,7 @@ except FileNotFoundError:
     # Fall back to basic config if `logging.ini` is missing
     logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     logger = logging.getLogger(__name__)
-    logger.error("Logging configuration file not found.")
+    logger.info("Logging configuration file not found, falling back to basic config.")
 
 def parse_arguments():
     """Parses command-line arguments."""
